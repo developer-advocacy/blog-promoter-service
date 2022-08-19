@@ -1,4 +1,4 @@
-package com.example.springblogpromoter;
+package com.joshlong.spring.blogs.team;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -13,18 +13,6 @@ import java.util.function.Supplier;
 
 class DefaultJsoupTeamClientTest {
 
-	@SneakyThrows
-	private static String read(Resource resource) {
-		try (var in = new InputStreamReader(resource.getInputStream())) {
-			return FileCopyUtils.copyToString(in);
-		}
-	}
-
-	@SneakyThrows
-	private static URL url(String url) {
-		return new URL(url);
-	}
-
 	@Test
 	void team() {
 		var supplier = (Supplier<String>) () -> read(new ClassPathResource("/sample-team.html"));
@@ -36,6 +24,18 @@ class DefaultJsoupTeamClientTest {
 						&& t.page().equals(url("https://spring.io/team/joshlong")) && t.twitter().contains("starbuxman")
 						&& t.name().equals("Josh Long")));
 
+	}
+
+	@SneakyThrows
+	private static URL url(String url) {
+		return new URL(url);
+	}
+
+	@SneakyThrows
+	private static String read(Resource resource) {
+		try (var in = new InputStreamReader(resource.getInputStream())) {
+			return FileCopyUtils.copyToString(in);
+		}
 	}
 
 }
