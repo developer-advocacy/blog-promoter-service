@@ -19,6 +19,7 @@ To automatically promote content being published [to the Spring blog](https://sp
 - x build spring integration feed processor
 - x persistence for teammates
 - x persistence for blog posts 
+- x build jdbc metadataStore so that the spring integration feed adapter doesn't redeliver the same blog posts over and over 
 - build out the periodic loop that pulls down the latest posts and tweets them
 - deploy to Kubernetes
 
