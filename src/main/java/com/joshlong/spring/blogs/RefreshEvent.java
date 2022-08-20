@@ -6,6 +6,10 @@ import java.util.Date;
 
 public class RefreshEvent extends ApplicationEvent {
 
+	public RefreshEvent() {
+		this(new Date());
+	}
+
 	public RefreshEvent(Date source) {
 		super(source);
 	}

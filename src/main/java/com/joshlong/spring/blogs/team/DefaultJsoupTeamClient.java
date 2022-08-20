@@ -7,9 +7,7 @@ import org.jsoup.Jsoup;
 import org.springframework.util.Assert;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -20,11 +18,11 @@ class DefaultJsoupTeamClient implements TeamClient {
 
 	@Override
 	@SneakyThrows
-	public Collection<Teammate> team() {
+	public Set<Teammate> team() {
 		var html = this.htmlSupplier.get();
 		Assert.notNull(html, "the html must be valid");
 		var doc = Jsoup.parse(html);
-		var list = new ArrayList<Teammate>();
+		var teammates = new HashSet<Teammate>();
 		for (var e : doc.select(".team-member--info")) {
 			var url = "https://spring.io" + e.select("a").attr("href");
 			var name = e.select(".team-member--name").text();
@@ -40,10 +38,10 @@ class DefaultJsoupTeamClient implements TeamClient {
 					map.put(socialType, i.attr("href"));
 			}
 			var teammate = new Teammate(from(url), name, position, location, map);
-			list.add(teammate);
+			teammates.add(teammate);
 			log.debug(teammate.toString());
 		}
-		return list;
+		return teammates;
 	}
 
 	@SneakyThrows

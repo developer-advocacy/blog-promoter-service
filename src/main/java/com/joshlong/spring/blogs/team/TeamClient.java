@@ -1,9 +1,9 @@
 package com.joshlong.spring.blogs.team;
 
-import java.util.Collection;
+import java.util.Set;
 
 public interface TeamClient {
 
-	Collection<Teammate> team();
+	Set<Teammate> team();
 
 }

@@ -1,4 +1,4 @@
--- drop table spring_teammate;
+-- drop table spring_teammates cascade ;
 
 create table if not exists spring_teammates
 (
@@ -8,11 +8,13 @@ create table if not exists spring_teammates
     position text             not null,
     location text             not null,
     github   text,
-    twitter  text
+    twitter  text,
+    fresh    bool not null  default true
 );
 
 
-create table spring_blog_posts
+
+create table if not exists spring_blog_posts
 (
     url        text      not null,
     published  timestamp not null,

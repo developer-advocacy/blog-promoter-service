@@ -1,6 +1,7 @@
 package com.joshlong.spring.blogs.team;
 
 import com.joshlong.spring.blogs.RefreshEvent;
+import com.joshlong.spring.blogs.TeamEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,7 +24,7 @@ class TeamConfiguration {
 	ApplicationRunner scheduledTeammateRunner(ApplicationEventPublisher publisher, TaskScheduler taskScheduler) {
 		return args -> {
 			publisher.publishEvent(new RefreshEvent(new Date())); // startup
-			taskScheduler.schedule(() -> publisher.publishEvent(new RefreshEvent(new Date())),
+			taskScheduler.schedule(() -> publisher.publishEvent(new RefreshEvent()),
 					new PeriodicTrigger(1, TimeUnit.HOURS)); // henceforth
 		};
 	}
@@ -45,7 +46,7 @@ class TeamConfiguration {
 	@Bean
 	ApplicationListener<RefreshEvent> refreshEventApplicationListener(ApplicationEventPublisher publisher,
 			TeamClient client) {
-		return event -> client.team().forEach(publisher::publishEvent);
+		return event -> publisher.publishEvent(new TeamEvent(client.team()));
 	}
 
 }
