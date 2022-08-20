@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
+import org.springframework.util.Assert;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ class DefaultJsoupTeamClient implements TeamClient {
 	@SneakyThrows
 	public Collection<Teammate> team() {
 		var html = this.htmlSupplier.get();
+		Assert.notNull(html, "the html must be valid");
 		var doc = Jsoup.parse(html);
 		var list = new ArrayList<Teammate>();
 		for (var e : doc.select(".team-member--info")) {
