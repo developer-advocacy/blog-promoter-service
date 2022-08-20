@@ -13,5 +13,12 @@ To automatically promote content being published [to the Spring blog](https://sp
 - then well have a periodic process that comes along and reads all the as-yet unprompted blogs and tweets out the ones that are at least half an hour old.
     - The reason for this is because it's common to have updates to blogs that change the title or fix spelling errors immediately after posting (I do this a lot)
 - then if theyre not yet promoted and if it's been an hour or more since the last tweet was posted (from this process, at least), then send it to the twitter service c/o `@springcentral`
-- 
+
+## To Do 
+- x build parser for the team page
+- x build spring integration feed processor
+- x persistence for teammates
+- persistence for blog posts 
+- build out the periodic loop that pulls down the latest posts and tweets them
+- deploy to Kubernetes
 
