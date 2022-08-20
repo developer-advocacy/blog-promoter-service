@@ -45,7 +45,7 @@ class PromotionRepository {
 			});
 			return null;
 		});
-
+		log.debug(post.url() + " " + post.title());
 	}
 
 	@EventListener

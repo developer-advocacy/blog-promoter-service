@@ -1,6 +1,7 @@
 package com.joshlong.spring.blogs.feed;
 
 import com.joshlong.spring.blogs.BlogPost;
+import com.joshlong.spring.blogs.metadata.DataSourceMetadataStore;
 import com.joshlong.spring.blogs.utils.UrlUtils;
 import com.rometools.rome.feed.synd.SyndCategory;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -12,7 +13,11 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.feed.dsl.Feed;
+import org.springframework.integration.feed.dsl.FeedEntryMessageSourceSpec;
+import org.springframework.integration.metadata.MetadataStore;
 import org.springframework.integration.transformer.GenericTransformer;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.Date;
@@ -23,6 +28,12 @@ import java.util.concurrent.TimeUnit;
 class FeedConfiguration {
 
 	@Bean
+	DataSourceMetadataStore dataSourceMetadataStore(JdbcTemplate jdbcTemplate,
+			TransactionTemplate transactionTemplate) {
+		return new DataSourceMetadataStore(jdbcTemplate, transactionTemplate);
+	}
+
+	@Bean
 	ApplicationEventPublishingMessageHandler eventHandler() {
 		var handler = new ApplicationEventPublishingMessageHandler();
 		handler.setPublishPayload(true);
@@ -30,13 +41,15 @@ class FeedConfiguration {
 	}
 
 	@Bean
-	IntegrationFlow integrationFlow(ApplicationEventPublishingMessageHandler eventHandler) {
+	IntegrationFlow integrationFlow(MetadataStore metadataStore,
+			ApplicationEventPublishingMessageHandler eventHandler) {
 		var atomFeedUrl = "https://spring.io/blog.atom";
+		var inbound = Feed //
+				.inboundAdapter(UrlUtils.buildUrl(atomFeedUrl), "spring-blog-feed") //
+				.metadataStore(metadataStore);
 		return IntegrationFlows //
-				.from(Feed.inboundAdapter(UrlUtils.buildUrl(atomFeedUrl), "spring-blog-feed"),
-						p -> p.poller(pm -> pm.fixedRate(10, TimeUnit.MINUTES)))//
+				.from(inbound, p -> p.poller(pm -> pm.fixedRate(1, TimeUnit.SECONDS)))//
 				.transform((GenericTransformer<SyndEntry, BlogPost>) source -> {
-					log.debug(source + "");
 					var title = source.getTitle();
 					var published = publishedDate(source);
 					var uri = source.getLink();

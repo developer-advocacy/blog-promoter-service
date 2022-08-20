@@ -23,3 +23,10 @@ create table if not exists spring_blog_posts
     author     text references spring_teammates (name)
 
 );
+
+create table if not exists spring_integration_metadata_store
+(
+    key   text not null unique primary key,
+    value text not null
+
+);
