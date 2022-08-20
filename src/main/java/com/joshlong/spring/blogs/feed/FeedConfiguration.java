@@ -1,6 +1,5 @@
 package com.joshlong.spring.blogs.feed;
 
-import com.joshlong.spring.blogs.BlogPost;
 import com.joshlong.spring.blogs.metadata.DataSourceMetadataStore;
 import com.joshlong.spring.blogs.utils.UrlUtils;
 import com.rometools.rome.feed.synd.SyndCategory;
@@ -13,7 +12,6 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.feed.dsl.Feed;
-import org.springframework.integration.feed.dsl.FeedEntryMessageSourceSpec;
 import org.springframework.integration.metadata.MetadataStore;
 import org.springframework.integration.transformer.GenericTransformer;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,6 +20,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -55,8 +54,8 @@ class FeedConfiguration {
 					var uri = source.getLink();
 					var authors = source.getAuthors().stream().map(SyndPerson::getName).distinct().toList();
 					var categories = source.getCategories().stream().map(SyndCategory::getName).map(String::toLowerCase)
-							.distinct().toList();
-					return new BlogPost(title, UrlUtils.buildUrl(uri), authors, published, categories);
+							.collect(Collectors.toSet());
+					return new BlogPost(title, UrlUtils.buildUrl(uri), authors.get(0), published, categories);
 				}) //
 				.handle(eventHandler) //
 				.get();

@@ -3,6 +3,7 @@ package com.joshlong.spring.blogs.team;
 import com.joshlong.spring.blogs.RefreshEvent;
 import com.joshlong.spring.blogs.TeamEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 class TeamConfiguration {
@@ -31,11 +33,14 @@ class TeamConfiguration {
 
 	@Bean
 	Supplier<String> httpHtmlSupplier(WebClient webClient) {
-		return () -> webClient.get() //
-				.uri("https://spring.io/team") //
-				.retrieve() //
-				.bodyToMono(String.class) //
-				.block();
+		return () -> {
+			var html = webClient.get() //
+					.uri("https://spring.io/team") //
+					.retrieve() //
+					.bodyToMono(String.class) //
+					.block();
+			return html;
+		};
 	}
 
 	@Bean

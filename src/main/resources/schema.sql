@@ -13,14 +13,14 @@ create table if not exists spring_teammates
 );
 
 
-
 create table if not exists spring_blog_posts
 (
     url        text primary key not null,
     published  timestamp        not null,
     categories text[],
     title      text             not null,
-    author     text references spring_teammates (name)
+    author     text references spring_teammates (name),
+    promoted   timestamp        null
 
 );
 
@@ -28,5 +28,4 @@ create table if not exists spring_integration_metadata_store
 (
     key   text not null unique primary key,
     value text not null
-
 );
