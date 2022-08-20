@@ -17,39 +17,40 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 class PromotionConfiguration {
 
-    private final PromotionService service;
+	private final PromotionService service;
 
-    @EventListener
-    public void blogPost(BlogPost post) {
-        this.service.addBlogPost(post);
-    }
+	@EventListener
+	public void blogPost(BlogPost post) {
+		this.service.addBlogPost(post);
+	}
 
-    @EventListener
-    public void teammate(TeamEvent teamEvent) {
-        this.service.addTeammate(teamEvent.teammates());
-    }
+	@EventListener
+	public void teammate(TeamEvent teamEvent) {
+		this.service.addTeammate(teamEvent.teammates());
+	}
 
-    @Bean
-    ApplicationRunner promotionApplicationRunner(TaskScheduler taskScheduler) {
-        return args -> taskScheduler.schedule(() -> doPromotion(this.service), new PeriodicTrigger(1, TimeUnit.MINUTES));
-    }
+	@Bean
+	ApplicationRunner promotionApplicationRunner(TaskScheduler taskScheduler) {
+		return args -> taskScheduler.schedule(() -> doPromotion(this.service),
+				new PeriodicTrigger(1, TimeUnit.MINUTES));
+	}
 
-    private static void doPromotion(PromotionService promotionService) {
-        log.debug("=============================================");
-        var toPromote = promotionService.getPromotableBlogs();
-        for (var promotable : toPromote) {
-            var teammate = promotable.author();
-            var blog = promotable.post();
-            log.debug(String.format("going to promote post [%s] by [%s]",
-                    blog.toString(), teammate.toString()));
-            var tweeted = tweet(promotable);
-            if (tweeted) {
-                promotionService.promote(blog);
-            }
-        }
-    }
+	private static void doPromotion(PromotionService promotionService) {
+		log.debug("=============================================");
+		var toPromote = promotionService.getPromotableBlogs();
+		for (var promotable : toPromote) {
+			var teammate = promotable.author();
+			var blog = promotable.post();
+			log.debug(String.format("going to promote post [%s] by [%s]", blog.toString(), teammate.toString()));
+			var tweeted = tweet(promotable);
+			if (tweeted) {
+				promotionService.promote(blog);
+			}
+		}
+	}
 
-    private static boolean tweet(PromotableBlog promotableBlog) {
-        return true;
-    }
+	private static boolean tweet(PromotableBlog promotableBlog) {
+		return true;
+	}
+
 }
