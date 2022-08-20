@@ -117,9 +117,9 @@ class PromotionService {
 
 	public void promote(BlogPost blog) {
 		this.tx.execute(t -> {
-			log.debug("promoting " + blog.url());
-			return this.ds.update("update spring_blog_posts set promoted = NOW() where url = ? ",
-					blog.url().toString());
+			var url = blog.url().toExternalForm();
+			log.debug("promoting " + url);
+			return this.ds.update("update spring_blog_posts set promoted = NOW() where url = ? ", url);
 		});
 	}
 
@@ -132,9 +132,8 @@ class PromotionService {
 	@SneakyThrows
 	private static void addSocialToSocialMediaMap(ResultSet resultSet, Social social,
 			Map<Social, String> socialMediaMap) {
-		var result = resultSet.getString(social.name().toLowerCase());
-		if (result != null)
-			socialMediaMap.put(social, result);
+		Optional.ofNullable(resultSet.getString(social.name().toLowerCase()))
+				.ifPresent(result -> socialMediaMap.put(social, result));
 	}
 
 }
