@@ -9,16 +9,17 @@ create table if not exists spring_teammates
     location text             not null,
     github   text,
     twitter  text,
-    fresh    bool not null  default true
+    fresh    bool             not null default true
 );
 
 
 
 create table if not exists spring_blog_posts
 (
-    url        text      not null,
-    published  timestamp not null,
+    url        text primary key not null,
+    published  timestamp        not null,
     categories text[],
+    title      text             not null,
     author     text references spring_teammates (name)
 
 );

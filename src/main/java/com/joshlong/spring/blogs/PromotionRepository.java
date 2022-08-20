@@ -18,23 +18,42 @@ class PromotionRepository {
 
 	@EventListener
 	public void blogPost(BlogPost post) {
-		log.debug("going to persist " + post);
 		var sql = """
-
+						insert into spring_blog_posts(
+						    url,
+						    published,
+						    title,
+						    categories ,
+						    author
+						)
+						values ( ?, ?, ?, ?, ?)
+						on conflict (url) do update set
+						    published=excluded.published ,
+						    title=excluded.title,
+						    categories=excluded.categories ,
+						    author=excluded.author
 				""";
-		this.ds.execute(sql);
+		tx.execute(tx -> {
+
+			ds.update(sql, ps -> {
+				ps.setString(1, post.url().toString());
+				ps.setDate(2, new java.sql.Date(post.published().toEpochMilli()));
+				ps.setString(3, post.title());
+				ps.setArray(4, ps.getConnection().createArrayOf("text", post.categories().toArray(new String[0])));
+				ps.setString(5, post.authors().get(0));
+				ps.execute();
+			});
+			return null;
+		});
 
 	}
 
 	@EventListener
 	public void teammate(TeamEvent event) {
 		var teammates = event.teammates();
-		log.debug("going to persist " + teammates);
 		tx.execute(status -> {
 			ds.execute("update spring_teammates set fresh = false");
-			log.debug("set all fresh = false");
 			teammates.forEach(teammate -> {
-				log.debug("persisting " + teammate);
 				var sql = """
 
 						insert into spring_teammates (

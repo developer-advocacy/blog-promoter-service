@@ -16,6 +16,7 @@ import org.springframework.integration.transformer.GenericTransformer;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
@@ -32,13 +33,17 @@ class FeedConfiguration {
 	IntegrationFlow integrationFlow(ApplicationEventPublishingMessageHandler eventHandler) {
 		var atomFeedUrl = "https://spring.io/blog.atom";
 		return IntegrationFlows //
-				.from(Feed.inboundAdapter(UrlUtils.buildUrl(atomFeedUrl), "spring-blog-feed"))//
+				.from(Feed.inboundAdapter(UrlUtils.buildUrl(atomFeedUrl), "spring-blog-feed"),
+						p -> p.poller(pm -> pm.fixedRate(10, TimeUnit.MINUTES)))//
 				.transform((GenericTransformer<SyndEntry, BlogPost>) source -> {
+					log.debug(source + "");
+					var title = source.getTitle();
 					var published = publishedDate(source);
 					var uri = source.getLink();
 					var authors = source.getAuthors().stream().map(SyndPerson::getName).distinct().toList();
-					var categories = source.getCategories().stream().map(SyndCategory::getName).distinct().toList();
-					return new BlogPost(UrlUtils.buildUrl(uri), authors, published, categories);
+					var categories = source.getCategories().stream().map(SyndCategory::getName).map(String::toLowerCase)
+							.distinct().toList();
+					return new BlogPost(title, UrlUtils.buildUrl(uri), authors, published, categories);
 				}) //
 				.handle(eventHandler) //
 				.get();

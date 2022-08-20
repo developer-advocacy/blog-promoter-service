@@ -10,7 +10,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
 
-@Slf4j
 @RequiredArgsConstructor
 class DefaultJsoupTeamClient implements TeamClient {
 
@@ -39,7 +38,6 @@ class DefaultJsoupTeamClient implements TeamClient {
 			}
 			var teammate = new Teammate(from(url), name, position, location, map);
 			teammates.add(teammate);
-			log.debug(teammate.toString());
 		}
 		return teammates;
 	}

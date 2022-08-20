@@ -11,5 +11,5 @@ import java.util.List;
  * @param published
  * @param categories
  */
-public record BlogPost(URL url, List<String> authors, Instant published, List<String> categories) {
+public record BlogPost(String title, URL url, List<String> authors, Instant published, List<String> categories) {
 }

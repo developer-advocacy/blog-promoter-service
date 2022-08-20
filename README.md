@@ -18,7 +18,7 @@ To automatically promote content being published [to the Spring blog](https://sp
 - x build parser for the team page
 - x build spring integration feed processor
 - x persistence for teammates
-- persistence for blog posts 
+- x persistence for blog posts 
 - build out the periodic loop that pulls down the latest posts and tweets them
 - deploy to Kubernetes
 
