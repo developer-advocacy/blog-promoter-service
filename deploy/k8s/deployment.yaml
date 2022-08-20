@@ -1,0 +1,19 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: spring-blog-promoter-cronjob
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: spring-blog-promoter-cronjob-container
+              image: gcr.io/bootiful/spring-blog-promoter:latest
+              imagePullPolicy: Always
+              envFrom:
+                - secretRef:
+                    name: spring-blog-promoter-secrets
+          restartPolicy: OnFailure

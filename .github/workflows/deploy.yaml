@@ -1,0 +1,69 @@
+name: Deploy
+
+env:
+
+  GKE_CLUSTER: joshlong-com
+  GKE_ZONE: us-central1-c
+  GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+
+  SPRING_R2DBC_URL: ${{ secrets.SPRING_R2DBC_URL }}
+  SPRING_R2DBC_PASSWORD: ${{ secrets.SPRING_R2DBC_PASSWORD }}
+  SPRING_R2DBC_USERNAME: ${{ secrets.SPRING_R2DBC_USERNAME }}
+
+  SPRING_RABBITMQ_HOST: ${{ secrets.TWITTER_SERVICE_RABBITMQ_HOST }}
+  SPRING_RABBITMQ_PASSWORD: ${{ secrets.TWITTER_SERVICE_RABBITMQ_PASSWORD }}
+  SPRING_RABBITMQ_PORT: ${{ secrets.TWITTER_SERVICE_RABBITMQ_PORT }}
+  SPRING_RABBITMQ_USERNAME: ${{ secrets.TWITTER_SERVICE_RABBITMQ_USERNAME }}
+  SPRING_RABBITMQ_VIRTUAL_HOST: ${{ secrets.TWITTER_SERVICE_RABBITMQ_VIRTUAL_HOST }}
+
+  BOOTIFUL_PROMOTION_PLAYLIST_IDS: ${{ secrets.BOOTIFUL_PROMOTION_PLAYLIST_IDS }}
+
+  YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+  BOOTIFUL_TWITTER_CLIENT_ID: ${{ secrets.BOOTIFUL_TWITTER_CLIENT_ID }}
+  BOOTIFUL_TWITTER_CLIENT_SECRET: ${{ secrets.BOOTIFUL_TWITTER_CLIENT_SECRET }}
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    name: Setup and Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - uses: google-github-actions/setup-gcloud@v0
+
+      - run: |
+          gcloud config set project $PROJECT_ID
+          gcloud --quiet auth configure-docker
+          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+          kubectl get pods
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      - name: Deploy Youtube Ingest
+        run: |
+          cd $GITHUB_WORKSPACE
+          export ROOT_DIR=$GITHUB_WORKSPACE
+          ./deploy/deploy.sh
+
+
