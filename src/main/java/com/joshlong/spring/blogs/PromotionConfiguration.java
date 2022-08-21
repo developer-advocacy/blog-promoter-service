@@ -76,7 +76,7 @@ class PromotionConfiguration {
 	private static String authorReference(Teammate teammate) {
 		var twitter = teammate.twitter();
 		if (StringUtils.hasText(twitter))
-			return "@" + twitter.substring(twitter.lastIndexOf('/'));
+			return "@" + twitter.substring(1 + twitter.lastIndexOf('/'));
 		var github = teammate.github();
 		if (StringUtils.hasText(github))
 			return github.substring(github.lastIndexOf('/'));
