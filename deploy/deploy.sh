@@ -32,11 +32,4 @@ kubectl delete secrets $SECRETS || echo "no secrets to delete."
 kubectl create secret generic $SECRETS --from-env-file $SECRETS_FN
 kubectl delete -f $ROOT_DIR/deploy/k8s/deployment.yaml || echo "couldn't delete the deployment as there was nothing deployed."
 kubectl apply -f $ROOT_DIR/deploy/k8s
-
-sleep 5
-echo "running the $APP_NAME cronjob once to kick things off..."
-kubectl create job --from=cronjob/${APP_NAME}-cronjob  ${APP_NAME}-cronjob-run-$RANDOM
-
-
-
-
+echo "finished deployment."
