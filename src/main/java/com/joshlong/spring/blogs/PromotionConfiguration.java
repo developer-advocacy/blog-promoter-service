@@ -86,7 +86,8 @@ class PromotionConfiguration {
 	@SneakyThrows
 	private boolean tweet(PromotableBlog promotableBlog) {
 		log.debug("'tweeting' " + promotableBlog);
-		var when = Instant.now().plus(5, TimeUnit.MINUTES.toChronoUnit()).atZone(ZoneId.systemDefault()).toInstant();
+		var when = Instant.now();
+		//.plus(5, TimeUnit.MINUTES.toChronoUnit()).atZone(ZoneId.systemDefault()).toInstant();
 		var message = TweetTextComposer.compose(String.format("new from %s: %s",
 				authorReference(promotableBlog.author()), promotableBlog.post().title()),
 				promotableBlog.post().url().toExternalForm());
