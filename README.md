@@ -20,6 +20,8 @@ To automatically promote content being published [to the Spring blog](https://sp
 - x persistence for teammates
 - x persistence for blog posts 
 - x build jdbc metadataStore so that the spring integration feed adapter doesn't redeliver the same blog posts over and over 
-- build out the periodic loop that pulls down the latest posts and tweets them
-- deploy to Kubernetes
+- x uild out the periodic loop that pulls down the latest posts and tweets them
+- x deploy to Kubernetes
+- extract out the twitter client itself and the twitter compose utility to a shared library on artifactory. the user should be able to bring in this new `twitter-service-starter`, specify some AMQP properties, and then inject a `TwitterClient` to send tweets (along with a client authentication ID, secret, and username). they should also have that convenient utility to ensure their messages fit in 280 characters. 
+  - ideally we'd rework the utility to support any arbitrary context objects, not just `title` and `url`. then wed also need to pass in a `Function<T,String>` to turn the `T` context into a String.  
 
