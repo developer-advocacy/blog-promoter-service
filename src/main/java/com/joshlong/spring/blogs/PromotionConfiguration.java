@@ -91,8 +91,9 @@ class PromotionConfiguration {
 				authorReference(promotableBlog.author()), promotableBlog.post().title()),
 				promotableBlog.post().url().toExternalForm());
 		var json = this.mapper.writeValueAsString(Map.of("text", message));
-		var sent = twitter.scheduleTweet(new TwitterClient.Client(this.twitterClientId, this.twitterClientSecret),
-				Date.from(when), this.twitterUsername, json);
+		var client = new TwitterClient.Client(this.twitterClientId, this.twitterClientSecret);
+		log.debug("client: " + client.id() + ":" + client.secret());
+		var sent = twitter.scheduleTweet(client, Date.from(when), this.twitterUsername, json);
 		return Boolean.TRUE.equals(sent.block());
 	}
 
