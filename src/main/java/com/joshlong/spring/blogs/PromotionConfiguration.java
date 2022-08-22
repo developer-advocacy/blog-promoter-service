@@ -3,7 +3,7 @@ package com.joshlong.spring.blogs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.joshlong.spring.blogs.feed.BlogPost;
 import com.joshlong.spring.blogs.team.Teammate;
-import com.joshlong.spring.blogs.twitter.TwitterClient;
+import com.joshlong.twitter.Twitter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
@@ -27,13 +27,13 @@ class PromotionConfiguration {
 
 	private final PromotionService promotions;
 
-	private final TwitterClient twitter;
+	private final Twitter twitter;
 
 	private final String twitterClientId, twitterClientSecret, twitterUsername;
 
 	private final ObjectMapper mapper;
 
-	PromotionConfiguration(ObjectMapper objectMapper, PromotionService promotions, TwitterClient twitter,
+	PromotionConfiguration(ObjectMapper objectMapper, PromotionService promotions, Twitter twitter,
 			JobProperties properties) {
 		this.promotions = promotions;
 		this.twitter = twitter;
@@ -86,13 +86,11 @@ class PromotionConfiguration {
 	private boolean tweet(PromotableBlog promotableBlog) {
 		log.debug("'tweeting' " + promotableBlog);
 		var when = Instant.now();
-		// .plus(5,
-		// TimeUnit.MINUTES.toChronoUnit()).atZone(ZoneId.systemDefault()).toInstant();
 		var message = TweetTextComposer.compose(String.format("new from %s: %s",
 				authorReference(promotableBlog.author()), promotableBlog.post().title()),
 				promotableBlog.post().url().toExternalForm());
 		var json = this.mapper.writeValueAsString(Map.of("text", message));
-		var client = new TwitterClient.Client(this.twitterClientId, this.twitterClientSecret);
+		var client = new Twitter.Client(this.twitterClientId, this.twitterClientSecret);
 		log.debug("client: " + client.id() + ":" + client.secret());
 		var sent = twitter.scheduleTweet(client, Date.from(when), this.twitterUsername, json);
 		return Boolean.TRUE.equals(sent.block());
