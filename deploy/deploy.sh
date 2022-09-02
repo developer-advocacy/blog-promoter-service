@@ -9,7 +9,7 @@ export IMAGE_NAME=gcr.io/${PROJECT_ID}/${APP_NAME}
 
 docker rmi -f $IMAGE_NAME
 cd $ROOT_DIR
-./mvnw -DskipTests=true spring-javaformat:apply clean deploy spring-boot:build-image -Dspring-boot.build-image.imageName=$IMAGE_NAME
+./mvnw -U -DskipTests=true spring-javaformat:apply clean deploy spring-boot:build-image -Dspring-boot.build-image.imageName=$IMAGE_NAME
 docker push $IMAGE_NAME
 
 echo $IMAGE_NAME
