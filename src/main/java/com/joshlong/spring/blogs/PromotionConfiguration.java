@@ -30,13 +30,9 @@ class PromotionConfiguration {
 
 	private final String twitterClientId, twitterClientSecret, twitterUsername;
 
-	private final ObjectMapper mapper;
-
-	PromotionConfiguration(ObjectMapper objectMapper, PromotionService promotions, Twitter twitter,
-			JobProperties properties) {
+	PromotionConfiguration(PromotionService promotions, Twitter twitter, JobProperties properties) {
 		this.promotions = promotions;
 		this.twitter = twitter;
-		this.mapper = objectMapper;
 		this.twitterUsername = properties.twitter().username();
 		this.twitterClientId = properties.twitter().clientId();
 		this.twitterClientSecret = properties.twitter().clientSecret();

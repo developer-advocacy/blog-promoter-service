@@ -64,7 +64,7 @@ jobs:
         with:
           java-version: 17
 
-      - name: Deploy Youtube Ingest
+      - name: Deploy Spring Blog Promotion
         run: |
           cd $GITHUB_WORKSPACE
           export ROOT_DIR=$GITHUB_WORKSPACE
