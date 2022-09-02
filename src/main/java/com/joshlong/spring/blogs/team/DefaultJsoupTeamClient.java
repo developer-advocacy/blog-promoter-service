@@ -2,12 +2,13 @@ package com.joshlong.spring.blogs.team;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.springframework.util.Assert;
 
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor

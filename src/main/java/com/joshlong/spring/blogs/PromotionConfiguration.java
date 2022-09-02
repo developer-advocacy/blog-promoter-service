@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 
 import java.sql.Date;
 import java.time.Instant;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -89,10 +88,9 @@ class PromotionConfiguration {
 		var message = TweetTextComposer.compose(String.format("new from %s: %s",
 				authorReference(promotableBlog.author()), promotableBlog.post().title()),
 				promotableBlog.post().url().toExternalForm());
-		var json = this.mapper.writeValueAsString(Map.of("text", message));
 		var client = new Twitter.Client(this.twitterClientId, this.twitterClientSecret);
 		log.debug("client: " + client.id() + ":" + client.secret());
-		var sent = twitter.scheduleTweet(client, Date.from(when), this.twitterUsername, json);
+		var sent = twitter.scheduleTweet(client, Date.from(when), this.twitterUsername, message, null);
 		return Boolean.TRUE.equals(sent.block());
 	}
 
