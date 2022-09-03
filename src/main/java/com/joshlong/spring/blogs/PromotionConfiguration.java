@@ -1,6 +1,5 @@
 package com.joshlong.spring.blogs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.joshlong.spring.blogs.feed.BlogPost;
 import com.joshlong.spring.blogs.team.Teammate;
 import com.joshlong.twitter.Twitter;
