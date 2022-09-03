@@ -32,20 +32,18 @@ class TeamConfiguration {
 	}
 
 	@Bean
-	Supplier<String> httpHtmlSupplier(WebClient webClient) {
-		return () -> {
-			var html = webClient.get() //
-					.uri("https://spring.io/team") //
-					.retrieve() //
-					.bodyToMono(String.class) //
-					.block();
-			return html;
-		};
+	TeamClient springTeamClient(WebClient http) {
+		var supplier = buildHttpHtmlSupplier(http);
+		return new DefaultJsoupTeamClient(supplier);
 	}
 
-	@Bean
-	TeamClient springTeamClient(Supplier<String> supplier) {
-		return new DefaultJsoupTeamClient(supplier);
+	private static Supplier<String> buildHttpHtmlSupplier(WebClient webClient) {
+		return () -> webClient//
+				.get() //
+				.uri("https://spring.io/team") //
+				.retrieve() //
+				.bodyToMono(String.class) //
+				.block();
 	}
 
 	@Bean
