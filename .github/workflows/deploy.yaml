@@ -59,10 +59,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v1
+
+      - uses: joshlong/java-version-export-github-action@v17
+
+      - uses: actions/setup-java@v1
         with:
-          java-version: 17
+          java-version: ${{ env.JAVA_MAJOR_VERSION }}
+
 
       - name: Deploy Spring Blog Promotion
         run: |
