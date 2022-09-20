@@ -107,7 +107,7 @@ abstract class TweetTextComposer {
 	}
 
 	private static String buildFullTweetText(String title, String url) {
-		return String.format("%s #springboot %s", title, url);
+		return String.format("%s %s", title, url);
 	}
 
 	private static String rTrimToSpace(String text, int desired) {
