@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.team;
+package com.joshlong.spring.blogs.spring.team;
 
 import java.util.Set;
 

@@ -1,8 +1,8 @@
 package com.joshlong.spring.blogs;
 
 import com.joshlong.spring.blogs.feed.BlogPost;
-import com.joshlong.spring.blogs.team.Social;
-import com.joshlong.spring.blogs.team.Teammate;
+import com.joshlong.spring.blogs.spring.team.Social;
+import com.joshlong.spring.blogs.spring.team.Teammate;
 import com.joshlong.spring.blogs.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;

@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.team;
+package com.joshlong.spring.blogs.spring.team;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.team;
+package com.joshlong.spring.blogs.spring.team;
 
 import com.joshlong.spring.blogs.RefreshEvent;
 import com.joshlong.spring.blogs.TeamEvent;

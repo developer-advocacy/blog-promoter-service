@@ -1,6 +1,6 @@
 package com.joshlong.spring.blogs;
 
-import com.joshlong.spring.blogs.team.Teammate;
+import com.joshlong.spring.blogs.spring.team.Teammate;
 
 import java.util.Set;
 

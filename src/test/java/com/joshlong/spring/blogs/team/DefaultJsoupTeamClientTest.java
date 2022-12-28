@@ -1,6 +1,8 @@
 package com.joshlong.spring.blogs.team;
 
 import com.joshlong.spring.blogs.TestUtils;
+import com.joshlong.spring.blogs.spring.team.DefaultJsoupTeamClient;
+import com.joshlong.spring.blogs.spring.team.Social;
 import com.joshlong.spring.blogs.utils.UrlUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

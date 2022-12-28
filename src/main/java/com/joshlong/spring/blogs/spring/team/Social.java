@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.team;
+package com.joshlong.spring.blogs.spring.team;
 
 public enum Social {
 
