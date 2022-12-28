@@ -13,6 +13,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -27,7 +28,7 @@ class TeamConfiguration {
 		return args -> {
 			publisher.publishEvent(new RefreshEvent(new Date())); // startup
 			taskScheduler.schedule(() -> publisher.publishEvent(new RefreshEvent()),
-					new PeriodicTrigger(1, TimeUnit.HOURS)); // henceforth
+					new PeriodicTrigger(Duration.of(1, TimeUnit.HOURS.toChronoUnit()))); // henceforth
 		};
 	}
 

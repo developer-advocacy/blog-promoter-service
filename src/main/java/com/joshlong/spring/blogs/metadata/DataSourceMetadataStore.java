@@ -15,8 +15,8 @@ public class DataSourceMetadataStore implements MetadataStore {
 	@Override
 	public void put(String key, String value) {
 		this.ds.update("""
-				        insert into spring_integration_metadata_store(key, value) values (?,?)
-				        on conflict( key) do update set value = excluded.value
+				insert into spring_integration_metadata_store(key, value) values (?,?)
+				on conflict( key) do update set value = excluded.value
 				""", ps -> {
 			ps.setString(1, key);
 			ps.setString(2, value);

@@ -1,4 +1,3 @@
-# README
+# Blog Promoter
 
-
-This service automatically promotes content being published [on the Spring blog](https://spring.io/blog).
+This service automatically promotes content published on relevant blogs, including [on the Spring blog](https://spring.io/blog).

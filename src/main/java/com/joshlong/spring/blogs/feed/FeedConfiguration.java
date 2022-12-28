@@ -8,12 +8,11 @@ import com.rometools.rome.feed.synd.SyndPerson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.core.GenericTransformer;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.feed.dsl.Feed;
 import org.springframework.integration.metadata.MetadataStore;
-import org.springframework.integration.transformer.GenericTransformer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -46,7 +45,7 @@ class FeedConfiguration {
 		var inbound = Feed //
 				.inboundAdapter(UrlUtils.buildUrl(atomFeedUrl), "spring-blog-feed") //
 				.metadataStore(metadataStore);
-		return IntegrationFlows //
+		return IntegrationFlow //
 				.from(inbound, p -> p.poller(pm -> pm.fixedRate(1, TimeUnit.SECONDS)))//
 				.transform((GenericTransformer<SyndEntry, BlogPost>) source -> {
 					var title = source.getTitle();

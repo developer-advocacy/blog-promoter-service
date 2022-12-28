@@ -5,31 +5,26 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.3</version>
+        <version>3.0.1</version>
         <relativePath/>
     </parent>
     <groupId>com.joshlong.springcentral</groupId>
     <artifactId>blog-promotion</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <properties>
-        <artifactory-maven-plugin.version>3.2.3</artifactory-maven-plugin.version>
-        <spring-cloud.version>2021.0.3</spring-cloud.version>
+         <spring-cloud.version>2022.0.0</spring-cloud.version>
         <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.joshlong.twitter</groupId>
             <artifactId>twitter-gateway-client</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>0.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -68,14 +63,6 @@
             <version>${spring-integration.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-stream</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.15.2</version>
@@ -112,41 +99,16 @@
         </dependencies>
     </dependencyManagement>
     <build>
-        <plugins>
+         <plugins>
             <plugin>
-                <groupId>io.spring.javaformat</groupId>
-                <artifactId>spring-javaformat-maven-plugin</artifactId>
-                <version>0.0.34</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <inherited>true</inherited>
-                        <goals>
-                            <goal>validate</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>${git-commit-id-plugin.version}</version>
             </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-
             <plugin>
                 <groupId>org.jfrog.buildinfo</groupId>
                 <artifactId>artifactory-maven-plugin</artifactId>
-                <version>${artifactory-maven-plugin.version}</version>
-                <inherited>false</inherited>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <id>build-info</id>
@@ -171,10 +133,11 @@
                             </publisher>
                             <buildInfo>
                                 <agentName>Github Actions</agentName>
-                                <buildNumber>{{GITHUB_RUN_ID}}
+                                <buildNumber>
+                                    {{GITHUB_RUN_ID}}
                                 </buildNumber>
                                 <buildUrl>
-                                    http://travis-ci.org/{{GITHUB_REPOSITORY}}/builds/{{GITHUB_RUN_ID}}
+                                    https://github.com/{{GITHUB_REPOSITORY}}/actions/runs/{{GITHUB_RUN_ID}}
                                 </buildUrl>
                                 <principal>{{USER}}</principal>
                                 <vcsRevision>{{GITHUB_SHA}}</vcsRevision>
@@ -182,6 +145,34 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.spring.javaformat</groupId>
+                <artifactId>spring-javaformat-maven-plugin</artifactId>
+                <version>0.0.33</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <inherited>true</inherited>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <imageBuilder>
+                        paketobuildpacks/builder:full
+                    </imageBuilder>
+                </configuration>
             </plugin>
         </plugins>
     </build>
