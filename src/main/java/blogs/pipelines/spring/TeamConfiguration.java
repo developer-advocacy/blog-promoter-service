@@ -51,9 +51,7 @@ class TeamConfiguration {
 		private final ScheduledExecutorService ses;
 
 		private void refresh() {
-			var copy = new HashSet<>(teamClient.team());
-			log.debug("publishing " + TeamRefreshedEvent.class.getName());
-			publisher.publishEvent(new TeamRefreshedEvent(copy));
+			publisher.publishEvent(new TeamRefreshedEvent(new HashSet<>(teamClient.team())));
 		}
 
 		@Override

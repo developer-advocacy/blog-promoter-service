@@ -53,7 +53,7 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 				""";
 		return tx.execute(tx -> {
 			ds.update(sql, ps -> {
-				ps.setBoolean(1, true);
+				ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
 				ps.setString(2, post.url().toExternalForm());
 				ps.execute();
 			});
