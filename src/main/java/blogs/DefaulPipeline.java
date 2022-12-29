@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.net.URL;
@@ -103,6 +104,7 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 					rs.getString("author"), new Date(rs.getDate("published").getTime()).toInstant(),
 					typedArrayFromJdbcArray(rs.getArray("categories")));
 			var author = mapAuthor(post);
+			Assert.notNull(author, "the author must never be null!");
 			return new PromotableBlog(post, author);
 		}, beanName.get());
 	}
@@ -161,12 +163,13 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		return null;
 	}
 
-	protected String buildAuthorReferenceForTweet(Author teammate) {
+	protected String buildAuthorReferenceForTweet(Author author) {
+		Assert.notNull(author, "the author must not be null");
 		var txt = new StringBuilder();
-		var socialMediaStringMap = teammate.socialMedia();
+		var socialMediaStringMap = author.socialMedia();
 
-		if (StringUtils.hasText(teammate.name())) {
-			txt.append(teammate.name());
+		if (StringUtils.hasText(author.name())) {
+			txt.append(author.name());
 		}
 
 		if (!socialMediaStringMap.isEmpty()) {

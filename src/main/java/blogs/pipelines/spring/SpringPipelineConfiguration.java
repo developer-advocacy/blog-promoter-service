@@ -1,50 +1,40 @@
 package blogs.pipelines.spring;
 
 import blogs.*;
+import blogs.pipelines.PipelineInitializedEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Configuration
-class SpringBlogPipelineConfiguration {
+class SpringPipelineConfiguration {
 
-	private final Set<Teammate> teammateSet = new ConcurrentSkipListSet<>(
-			Comparator.comparing(o -> o.page().toExternalForm()));
-
-	private final Object monitor = new Object();
-
-	@EventListener
-	public void team(TeamRefreshedEvent teamRefreshedEvent) {
-		log.debug("got a " + TeamRefreshedEvent.class.getName() + " with " + teamRefreshedEvent.teammates().size()
-				+ " entries");
-		synchronized (this.monitor) {
-			this.teammateSet.clear();
-			this.teammateSet.addAll(teamRefreshedEvent.teammates());
-		}
-	}
+	private final AtomicReference<Set<Teammate>> teammateSet = new AtomicReference<>();
 
 	@Bean
 	Pipeline spring(TransactionTemplate tx, JdbcTemplate ds) {
-		log.info("starting the Spring pipeline");
 		var url = UrlUtils.buildUrl("https://spring.io/blog.atom");
 		return new DefaulPipeline(url, tx, ds, "springcentral") {
 
 			@Override
 			public Author mapAuthor(BlogPost entry) {
+				var teammates = teammateSet.get();
+				Assert.state(teammates != null && teammates.size() > 0, "no teammates found");
 				var name = entry.author();
 				Assert.hasText(name, "the name can't be null");
-				for (var teammate : teammateSet) {
+				for (var teammate : teammates) {
 					if (teammate.name().equals(name)) {
 						var map = new HashMap<AuthorSocialMedia, String>();
 						teammate.socialMedia().forEach((social, username) -> {
@@ -59,6 +49,19 @@ class SpringBlogPipelineConfiguration {
 				}
 				return null;
 			}
+		};
+	}
+
+	@Bean
+	ApplicationListener<TeamRefreshedEvent> teamRefreshedEventApplicationListener(Pipeline spring,
+			ApplicationEventPublisher publisher) {
+		return teamRefreshedEvent -> {
+			var teammates = teamRefreshedEvent.getSource();
+			Assert.notNull(teammates, "the teammates collection should not be null");
+			Assert.state(teammates.size() > 0, "there should be a non-zero number of teammates");
+			log.debug("got a " + TeamRefreshedEvent.class.getSimpleName() + " with " + teammates.size() + " entries");
+			this.teammateSet.set(Collections.synchronizedSet(new HashSet<>(teammates)));
+			publisher.publishEvent(new PipelineInitializedEvent(spring));
 		};
 	}
 

@@ -21,14 +21,9 @@ import java.util.function.Supplier;
 class TeamConfiguration {
 
 	@Bean
-	TeamClient springTeamClient(WebClient http) {
-		var supplier = buildHttpHtmlSupplier(http);
+	TeamClient springTeamClient(WebClient.Builder http) {
+		var supplier = buildHttpHtmlSupplier(http.build());
 		return new DefaultJsoupTeamClient(supplier);
-	}
-
-	@Bean
-	WebClient webClient(WebClient.Builder builder) {
-		return builder.build();
 	}
 
 	static Supplier<String> buildHttpHtmlSupplier(WebClient webClient) {
@@ -41,7 +36,6 @@ class TeamConfiguration {
 	}
 
 	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE)
 	ApplicationListener<ApplicationReadyEvent> teamApplicationReadyEventListener(TeamClient teamClient,
 			ApplicationEventPublisher publisher, ScheduledExecutorService ses) {
 		return new TeamApplicationReadyEventListener(teamClient, publisher, ses);
@@ -58,6 +52,7 @@ class TeamConfiguration {
 
 		private void refresh() {
 			var copy = new HashSet<>(teamClient.team());
+			log.debug("publishing " + TeamRefreshedEvent.class.getName());
 			publisher.publishEvent(new TeamRefreshedEvent(copy));
 		}
 
