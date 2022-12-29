@@ -46,10 +46,6 @@ public class Main {
 
 			var mcs = MemberCategory.values();
 
-			// twitter client
-			for (var c : new String[] { "com.joshlong.twitter.Twitter$TwitterRequest" })
-				hints.reflection().registerType(TypeReference.of(c), mcs);
-
 			// rome
 			for (var c : new Class<?>[] { com.rometools.rome.feed.module.DCModuleImpl.class })
 				hints.reflection().registerType(c, mcs);
