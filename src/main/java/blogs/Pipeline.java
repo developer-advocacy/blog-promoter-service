@@ -16,6 +16,8 @@ public interface Pipeline {
 	 */
 	URL getFeedUrl();
 
+	String getTwitterUsername();
+
 	/**
 	 * the new entries from the feed need to be mapped into {@link BlogPost}
 	 */
@@ -31,5 +33,7 @@ public interface Pipeline {
 	List<PromotableBlog> getPromotableBlogs();
 
 	BlogPost record(BlogPost post);
+
+	String composeTweetFor(PromotableBlog pb);
 
 }

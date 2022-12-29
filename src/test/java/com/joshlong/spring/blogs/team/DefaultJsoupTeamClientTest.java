@@ -1,7 +1,7 @@
 package com.joshlong.spring.blogs.team;
 
 import com.joshlong.spring.blogs.TestUtils;
-import com.joshlong.spring.blogs.utils.UrlUtils;
+import blogs.pipelines.UrlUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

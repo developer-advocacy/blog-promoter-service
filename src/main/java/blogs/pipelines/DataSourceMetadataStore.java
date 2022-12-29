@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.metadata;
+package blogs.pipelines;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.integration.metadata.MetadataStore;

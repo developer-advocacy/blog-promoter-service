@@ -1,7 +1,7 @@
 package blogs.pipelines.spring;
 
 import blogs.*;
-import com.joshlong.spring.blogs.utils.UrlUtils;
+import blogs.pipelines.UrlUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -33,7 +33,7 @@ class SpringBlogPipelineConfiguration {
 	@Bean
 	Pipeline spring(TransactionTemplate tx, JdbcTemplate ds) {
 		var url = UrlUtils.buildUrl("https://spring.io/blog.atom");
-		return new DefaulPipeline(url, tx, ds) {
+		return new DefaulPipeline(url, tx, ds, "springcentral") {
 
 			@Override
 			public Author mapAuthor(BlogPost entry) {
@@ -52,6 +52,7 @@ class SpringBlogPipelineConfiguration {
 						return new Author(name, map);
 					}
 				}
+				return null;
 			}
 		};
 	}

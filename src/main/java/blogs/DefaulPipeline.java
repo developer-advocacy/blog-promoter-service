@@ -1,6 +1,6 @@
 package blogs;
 
-import com.joshlong.spring.blogs.utils.UrlUtils;
+import blogs.pipelines.UrlUtils;
 import com.rometools.rome.feed.synd.SyndCategory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndPerson;
@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.StringUtils;
 
 import java.net.URL;
 import java.sql.Array;
@@ -33,9 +34,24 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 
 	private final JdbcTemplate ds;
 
+	private final String twitterUsername;
+
+	@Override
+	public String getTwitterUsername() {
+		return this.twitterUsername;
+	}
+
 	@Override
 	public URL getFeedUrl() {
 		return this.url;
+	}
+
+	@Override
+	public String composeTweetFor(PromotableBlog promotableBlog) {
+		var authorReferenceForTweet = buildAuthorReferenceForTweet(promotableBlog.author());
+		return TweetTextComposers.compose(
+				String.format("new from %s: %s", authorReferenceForTweet, promotableBlog.blogPost().title()),
+				promotableBlog.blogPost().url().toExternalForm());
 	}
 
 	@Override
@@ -113,6 +129,11 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		return post;
 	}
 
+	@Override
+	public void setBeanName(String name) {
+		this.beanName.set(name);
+	}
+
 	private static Instant publishedDate(SyndEntry entry) {
 		var dates = new Date[] { entry.getUpdatedDate(), entry.getPublishedDate() };
 		for (var date : dates)
@@ -121,9 +142,23 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		return null;
 	}
 
-	@Override
-	public void setBeanName(String name) {
-		this.beanName.set(name);
+	protected String buildAuthorReferenceForTweet(Author teammate) {
+		var txt = new StringBuilder();
+		var socialMediaStringMap = teammate.socialMedia();
+
+		if (StringUtils.hasText(teammate.name())) {
+			txt.append(teammate.name());
+		}
+
+		if (!socialMediaStringMap.isEmpty()) {
+			var twitter = socialMediaStringMap.getOrDefault(AuthorSocialMedia.TWITTER, "");
+			if (StringUtils.hasText(twitter)) {
+				if (!twitter.startsWith("@"))
+					twitter = "@" + socialMediaStringMap;
+				txt.append(String.format(" (%s)", twitter));
+			}
+		}
+		return txt.toString();
 	}
 
 }

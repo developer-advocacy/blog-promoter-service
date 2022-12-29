@@ -1,7 +1,7 @@
 package blogs.pipelines.joshlong;
 
 import blogs.*;
-import com.joshlong.spring.blogs.utils.UrlUtils;
+import blogs.pipelines.UrlUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,7 +15,7 @@ class JoshLongBlogPipelineConfiguration {
 	@Bean
 	Pipeline joshlong(TransactionTemplate tt, JdbcTemplate ds) {
 		var url = UrlUtils.buildUrl("https://api.joshlong.com/feed.xml");
-		return new DefaulPipeline(url, tt, ds) {
+		return new DefaulPipeline(url, tt, ds, "starbuxman") {
 
 			@Override
 			public Author mapAuthor(BlogPost entry) {

@@ -1,25 +1,27 @@
 package blogs;
 
-import com.joshlong.spring.blogs.metadata.DataSourceMetadataStore;
+import blogs.pipelines.DataSourceMetadataStore;
+import com.joshlong.twitter.Twitter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.integration.core.GenericHandler;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.integration.feed.dsl.Feed;
 import org.springframework.integration.metadata.MetadataStore;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,46 +36,44 @@ class IntegrationConfiguration {
 			TransactionTemplate transactionTemplate) {
 		return new DataSourceMetadataStore(jdbcTemplate, transactionTemplate);
 	}
-	/*
-	 *
-	 * @Bean ApplicationEventPublishingMessageHandler
-	 * applicationEventPublishingMessageHandler() { var handler = new
-	 * ApplicationEventPublishingMessageHandler(); handler.setPublishPayload(true); return
-	 * handler; }
-	 */
 
 	@Bean
-	@Order(Ordered.LOWEST_PRECEDENCE)
-	ApplicationListener<ApplicationReadyEvent> promotionIntegrationFlowApplicationReadyListener(
-			Map<String, Pipeline> pipelines, IntegrationFlowContext ctx, MetadataStore metadataStore) {
+	@Order
+	ApplicationListener<ApplicationReadyEvent> promotionIntegrationFlowApplicationReadyListener(Twitter twitter,
+			Twitter.Client client, Map<String, Pipeline> pipelines, IntegrationFlowContext ctx) {
 		Assert.state(pipelines.size() > 0, () -> "you must configure at least one " + Pipeline.class.getName());
 		log.debug("kicking off " + getClass().getName() + '.');
 		return event -> pipelines.forEach((id, blogPromotionPipeline) -> {
 			log.info("the id [" + id + "] is mapped to [" + blogPromotionPipeline + "]");
-			var flow = this.buildPromotionIntegrationFlow(id, blogPromotionPipeline, metadataStore);
+			var flow = this.buildPromotionIntegrationFlow(twitter, client, id, blogPromotionPipeline);
 			ctx.registration(flow).register().start();
 		});
 	}
 
-	// todo build something that pops a PromotableBlog from a collection one message at a
-	// time
-	// todo we don't want the MessagweSource to constantly be re-polling the DB.
-	// todo for now we'll be dumb about it to make sure it works and do the worst possible
-	// thing: constantly re-run the query
-	private IntegrationFlow buildPromotionIntegrationFlow(String id, Pipeline pipeline, MetadataStore metadataStore) {
-		return IntegrationFlow.from((MessageSource<PromotableBlog>) () -> {
-			var promotable = pipeline.getPromotableBlogs();
-			if (promotable != null && promotable.size() > 0) {
-				return MessageBuilder.withPayload(promotable.get(0)).build();
-			}
-			log.debug("there are no " + PromotableBlog.class.getName() + "s to promote for pipeline [" + id
-					+ "]. returning null");
-			return null;
-		}).get();
+	// todo is there a smart way to avoid re-polling the DB on each fetch?
+	private IntegrationFlow buildPromotionIntegrationFlow(Twitter twitter, Twitter.Client client, String id,
+			Pipeline pipeline) {
+		return IntegrationFlow//
+				.from((MessageSource<PromotableBlog>) () -> {
+					var promotable = pipeline.getPromotableBlogs();
+					if (promotable != null && promotable.size() > 0) {
+						return MessageBuilder.withPayload(promotable.get(0)).build();
+					}
+					log.debug("there are no " + PromotableBlog.class.getName() + "s to promote for pipeline [" + id
+							+ "], returning null");
+					return null;
+				}, p -> p.poller(pc -> pc.fixedRate(1, TimeUnit.MINUTES)))//
+				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
+					var tweet = pipeline.composeTweetFor(payload);
+					var sent = twitter.scheduleTweet(client, new Date(), pipeline.getTwitterUsername(), tweet, null);
+					if (Objects.equals(sent.block(), Boolean.TRUE))
+						log.debug("sent a tweet for " + payload.blogPost().title());
+					return null;
+				}).get();
 	}
 
 	@Bean
-	@Order(Ordered.LOWEST_PRECEDENCE)
+	@Order
 	ApplicationListener<ApplicationReadyEvent> ingestFeedIntegrationFlowApplicationReadyListener(
 			Map<String, Pipeline> pipelines, IntegrationFlowContext ctx, MetadataStore metadataStore) {
 		Assert.state(pipelines.size() > 0, () -> "you must configure at least one " + Pipeline.class.getName());

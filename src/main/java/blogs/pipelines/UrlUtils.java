@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.utils;
+package blogs.pipelines;
 
 import lombok.SneakyThrows;
 
