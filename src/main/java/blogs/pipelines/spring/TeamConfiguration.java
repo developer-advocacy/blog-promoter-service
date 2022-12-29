@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.HashSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -40,7 +41,7 @@ class TeamConfiguration {
 	}
 
 	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE) // this needs to run before any of the pipelines
+	@Order(Ordered.HIGHEST_PRECEDENCE)
 	ApplicationListener<ApplicationReadyEvent> teamApplicationReadyEventListener(TeamClient teamClient,
 			ApplicationEventPublisher publisher, ScheduledExecutorService ses) {
 		return new TeamApplicationReadyEventListener(teamClient, publisher, ses);
@@ -56,8 +57,8 @@ class TeamConfiguration {
 		private final ScheduledExecutorService ses;
 
 		private void refresh() {
-			log.info("refresh()");
-			publisher.publishEvent(new TeamRefreshedEvent(teamClient.team()));
+			var copy = new HashSet<>(teamClient.team());
+			publisher.publishEvent(new TeamRefreshedEvent(copy));
 		}
 
 		@Override

@@ -1,4 +1,4 @@
-package blogs.pipelines;
+package blogs;
 
 import lombok.SneakyThrows;
 

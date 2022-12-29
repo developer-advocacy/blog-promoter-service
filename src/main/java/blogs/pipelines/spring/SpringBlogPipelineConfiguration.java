@@ -1,7 +1,7 @@
 package blogs.pipelines.spring;
 
 import blogs.*;
-import blogs.pipelines.UrlUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -11,9 +11,11 @@ import org.springframework.util.Assert;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+@Slf4j
 @Configuration
 class SpringBlogPipelineConfiguration {
 
@@ -24,6 +26,8 @@ class SpringBlogPipelineConfiguration {
 
 	@EventListener
 	public void team(TeamRefreshedEvent teamRefreshedEvent) {
+		log.debug("got a " + TeamRefreshedEvent.class.getName() + " with " + teamRefreshedEvent.teammates().size()
+				+ " entries");
 		synchronized (this.monitor) {
 			this.teammateSet.clear();
 			this.teammateSet.addAll(teamRefreshedEvent.teammates());
@@ -32,6 +36,7 @@ class SpringBlogPipelineConfiguration {
 
 	@Bean
 	Pipeline spring(TransactionTemplate tx, JdbcTemplate ds) {
+		log.info("starting the Spring pipeline");
 		var url = UrlUtils.buildUrl("https://spring.io/blog.atom");
 		return new DefaulPipeline(url, tx, ds, "springcentral") {
 

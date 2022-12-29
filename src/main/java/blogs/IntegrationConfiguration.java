@@ -1,12 +1,12 @@
 package blogs;
 
-import blogs.pipelines.DataSourceMetadataStore;
 import com.joshlong.twitter.Twitter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.integration.core.GenericHandler;
 import org.springframework.integration.core.MessageSource;
@@ -19,6 +19,8 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -38,7 +40,7 @@ class IntegrationConfiguration {
 	}
 
 	@Bean
-	@Order
+	@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 	ApplicationListener<ApplicationReadyEvent> promotionIntegrationFlowApplicationReadyListener(Twitter twitter,
 			Twitter.Client client, Map<String, Pipeline> pipelines, IntegrationFlowContext ctx) {
 		Assert.state(pipelines.size() > 0, () -> "you must configure at least one " + Pipeline.class.getName());
@@ -53,6 +55,7 @@ class IntegrationConfiguration {
 	// todo is there a smart way to avoid re-polling the DB on each fetch?
 	private IntegrationFlow buildPromotionIntegrationFlow(Twitter twitter, Twitter.Client client, String id,
 			Pipeline pipeline) {
+
 		return IntegrationFlow//
 				.from((MessageSource<PromotableBlog>) () -> {
 					var promotable = pipeline.getPromotableBlogs();
@@ -63,17 +66,22 @@ class IntegrationConfiguration {
 							+ "], returning null");
 					return null;
 				}, p -> p.poller(pc -> pc.fixedRate(1, TimeUnit.MINUTES)))//
+				.filter(PromotableBlog.class,
+						promotableBlog -> promotableBlog.blogPost().published()
+								.isAfter(Instant.now().minus(Duration.ofDays(2))))
 				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
 					var tweet = pipeline.composeTweetFor(payload);
 					var sent = twitter.scheduleTweet(client, new Date(), pipeline.getTwitterUsername(), tweet, null);
-					if (Objects.equals(sent.block(), Boolean.TRUE))
+					if (Objects.equals(sent.block(), Boolean.TRUE)) {
 						log.debug("sent a tweet for " + payload.blogPost().title());
+						pipeline.promote(payload.blogPost());
+					}
 					return null;
 				}).get();
 	}
 
 	@Bean
-	@Order
+	@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 	ApplicationListener<ApplicationReadyEvent> ingestFeedIntegrationFlowApplicationReadyListener(
 			Map<String, Pipeline> pipelines, IntegrationFlowContext ctx, MetadataStore metadataStore) {
 		Assert.state(pipelines.size() > 0, () -> "you must configure at least one " + Pipeline.class.getName());
@@ -94,7 +102,15 @@ class IntegrationConfiguration {
 		return IntegrationFlow //
 				.from(inbound, p -> p.poller(pm -> pm.fixedRate(1, TimeUnit.SECONDS)))//
 				.transform(promotionPipeline::mapBlogPost) //
-				.transform(promotionPipeline::record).get();
+				.transform(promotionPipeline::record) //
+				.handle((GenericHandler<BlogPost>) (payload, headers) -> {
+					if (log.isDebugEnabled()) {
+						var url = payload.url();
+						log.debug("ingested a blogPost [" + url + "]");
+						headers.forEach((key, value) -> log.debug(url + ":" + key + '=' + value));
+					}
+					return null;
+				}).get();
 	}
 
 }

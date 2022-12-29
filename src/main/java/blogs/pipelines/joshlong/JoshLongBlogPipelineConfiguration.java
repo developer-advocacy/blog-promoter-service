@@ -1,7 +1,7 @@
 package blogs.pipelines.joshlong;
 
 import blogs.*;
-import blogs.pipelines.UrlUtils;
+import blogs.UrlUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;

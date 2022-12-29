@@ -1,6 +1,5 @@
 package blogs;
 
-import blogs.pipelines.UrlUtils;
 import com.rometools.rome.feed.synd.SyndCategory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndPerson;
@@ -20,6 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
+ * This class captures that which changes from one blog promotion campaign to another,
+ * things like the RSS/ATOM feed from which the posts are drawn, how authors of the blog
+ * are reference in the tweets, the text of the tweets, the username that shall be used to
+ * issue the tweets, etc.
+ *
  * @author Josh Long
  */
 @Slf4j
@@ -39,6 +43,21 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 	@Override
 	public String getTwitterUsername() {
 		return this.twitterUsername;
+	}
+
+	@Override
+	public BlogPost promote(BlogPost post) {
+		var sql = """
+				    update blog_posts set promoted = ? where url = ?
+				""";
+		return tx.execute(tx -> {
+			ds.update(sql, ps -> {
+				ps.setBoolean(1, true);
+				ps.setString(2, post.url().toExternalForm());
+				ps.execute();
+			});
+			return post;
+		});
 	}
 
 	@Override
@@ -76,20 +95,20 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		var sql = """
 				select b.title, b.url as blog_url , b.author, b.published, b.categories
 				from blog_posts b
-				where  b.promoted is null
+				where  b.promoted is null and blog_id = ?
 				order by b.published desc
 				""";
 		return this.ds.query(sql, (rs, rowNum) -> {
 			var post = new BlogPost(rs.getString("title"), UrlUtils.buildUrl(rs.getString("blog_url")),
 					rs.getString("author"), new Date(rs.getDate("published").getTime()).toInstant(),
-					authorsFromArray(rs.getArray("categories")));
+					typedArrayFromJdbcArray(rs.getArray("categories")));
 			var author = mapAuthor(post);
 			return new PromotableBlog(post, author);
-		});
+		}, beanName.get());
 	}
 
 	@SneakyThrows
-	private static Set<String> authorsFromArray(Array array) {
+	private static Set<String> typedArrayFromJdbcArray(Array array) {
 		var stringArray = (String[]) array.getArray();
 		return new HashSet<>(Arrays.asList(stringArray));
 	}
