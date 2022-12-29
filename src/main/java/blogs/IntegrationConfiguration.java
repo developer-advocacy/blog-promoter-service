@@ -120,7 +120,8 @@ class IntegrationConfiguration {
 						headers.forEach((key, value) -> log.debug(url + ":" + key + '=' + value));
 					}
 					return null;
-				}).get();
+				}) //
+				.get();
 	}
 
 }
