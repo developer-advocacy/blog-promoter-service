@@ -176,7 +176,7 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 			var twitter = socialMediaStringMap.getOrDefault(AuthorSocialMedia.TWITTER, "");
 			if (StringUtils.hasText(twitter)) {
 				if (!twitter.startsWith("@"))
-					twitter = "@" + socialMediaStringMap;
+					twitter = "@" + twitter;
 				txt.append(String.format(" (%s)", twitter));
 			}
 		}

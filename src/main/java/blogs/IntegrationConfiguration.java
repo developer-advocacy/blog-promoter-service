@@ -51,17 +51,17 @@ class IntegrationConfiguration {
 	}
 
 	@Bean
-	ApplicationListener<AllPipelinesInitializedEvent> promotionIntegrationFlowRunner(Twitter twitter,
-			Twitter.Client client, Map<String, Pipeline> pipelines, IntegrationFlowContext ctx) {
-		return event -> visitPipelinesAndLaunchIntegrationFlow(ctx, pipelines,
-				(id, pipeline) -> buildPromotionIntegrationFlow(twitter, client, id, pipeline));
-	}
-
-	@Bean
 	ApplicationListener<AllPipelinesInitializedEvent> feedIngestIntegrationFlowRunner(Map<String, Pipeline> pipelines,
 			IntegrationFlowContext ctx, MetadataStore metadataStore) {
 		return event -> visitPipelinesAndLaunchIntegrationFlow(ctx, pipelines,
 				(id, pipeline) -> buildIngestIntegrationFlow(id, pipeline, metadataStore));
+	}
+
+	@Bean
+	ApplicationListener<AllPipelinesInitializedEvent> promotionIntegrationFlowRunner(Twitter twitter,
+			Twitter.Client client, Map<String, Pipeline> pipelines, IntegrationFlowContext ctx) {
+		return event -> visitPipelinesAndLaunchIntegrationFlow(ctx, pipelines,
+				(id, pipeline) -> buildPromotionIntegrationFlow(twitter, client, id, pipeline));
 	}
 
 	private static void visitPipelinesAndLaunchIntegrationFlow(IntegrationFlowContext context,

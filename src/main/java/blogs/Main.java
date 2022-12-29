@@ -36,7 +36,7 @@ public class Main {
 
 	@Bean(destroyMethod = "")
 	ScheduledExecutorService scheduledExecutorService() {
-		return Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
+		return Executors.newScheduledThreadPool(2 * Runtime.getRuntime().availableProcessors());
 	}
 
 	static class Hints implements RuntimeHintsRegistrar {
