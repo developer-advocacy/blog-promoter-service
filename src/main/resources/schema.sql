@@ -13,13 +13,14 @@ create table if not exists spring_teammates
 );
 
 
-create table if not exists spring_blog_posts
+create table if not exists blog_posts
 (
     url        text primary key not null,
     published  timestamp        not null,
     categories text[],
     title      text             not null,
-    author     text references spring_teammates (name),
+    blog_id    text             not null,
+    author     text             null,
     promoted   timestamp        null
 
 );
