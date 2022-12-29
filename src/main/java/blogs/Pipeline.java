@@ -11,25 +11,20 @@ import java.util.List;
  */
 public interface Pipeline {
 
-	/**
-	 * the source of the feed to be passed into Spring Integration
-	 */
 	URL getFeedUrl();
 
-	/**
-	 * the new entries from the feed need to be mapped into {@link BlogPost}
-	 */
+	String getTwitterUsername();
+
 	BlogPost mapBlogPost(SyndEntry entry);
 
-	/**
-	 * the idea is that this may require some enrichment so provide a plug for this
-	 * @param entry
-	 * @return
-	 */
 	Author mapAuthor(BlogPost entry);
 
 	List<PromotableBlog> getPromotableBlogs();
 
 	BlogPost record(BlogPost post);
+
+	BlogPost promote(BlogPost post);
+
+	String composeTweetFor(PromotableBlog pb);
 
 }

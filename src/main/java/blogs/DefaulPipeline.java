@@ -1,6 +1,5 @@
 package blogs;
 
-import com.joshlong.spring.blogs.utils.UrlUtils;
 import com.rometools.rome.feed.synd.SyndCategory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndPerson;
@@ -10,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.net.URL;
 import java.sql.Array;
@@ -19,6 +20,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
+ * This class captures that which changes from one blog promotion campaign to another,
+ * things like the RSS/ATOM feed from which the posts are drawn, how authors of the blog
+ * are reference in the tweets, the text of the tweets, the username that shall be used to
+ * issue the tweets, etc.
+ *
  * @author Josh Long
  */
 @Slf4j
@@ -33,9 +39,39 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 
 	private final JdbcTemplate ds;
 
+	private final String twitterUsername;
+
+	@Override
+	public String getTwitterUsername() {
+		return this.twitterUsername;
+	}
+
+	@Override
+	public BlogPost promote(BlogPost post) {
+		var sql = """
+				    update blog_posts set promoted = ? where url = ?
+				""";
+		return tx.execute(tx -> {
+			ds.update(sql, ps -> {
+				ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+				ps.setString(2, post.url().toExternalForm());
+				ps.execute();
+			});
+			return post;
+		});
+	}
+
 	@Override
 	public URL getFeedUrl() {
 		return this.url;
+	}
+
+	@Override
+	public String composeTweetFor(PromotableBlog promotableBlog) {
+		var authorReferenceForTweet = buildAuthorReferenceForTweet(promotableBlog.author());
+		return TweetTextComposers.compose(
+				String.format("new from %s: %s", authorReferenceForTweet, promotableBlog.blogPost().title()),
+				promotableBlog.blogPost().url().toExternalForm());
 	}
 
 	@Override
@@ -60,20 +96,21 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		var sql = """
 				select b.title, b.url as blog_url , b.author, b.published, b.categories
 				from blog_posts b
-				where  b.promoted is null
+				where  b.promoted is null and blog_id = ?
 				order by b.published desc
 				""";
 		return this.ds.query(sql, (rs, rowNum) -> {
 			var post = new BlogPost(rs.getString("title"), UrlUtils.buildUrl(rs.getString("blog_url")),
 					rs.getString("author"), new Date(rs.getDate("published").getTime()).toInstant(),
-					authorsFromArray(rs.getArray("categories")));
+					typedArrayFromJdbcArray(rs.getArray("categories")));
 			var author = mapAuthor(post);
+			Assert.notNull(author, "the author must never be null!");
 			return new PromotableBlog(post, author);
-		});
+		}, beanName.get());
 	}
 
 	@SneakyThrows
-	private static Set<String> authorsFromArray(Array array) {
+	private static Set<String> typedArrayFromJdbcArray(Array array) {
 		var stringArray = (String[]) array.getArray();
 		return new HashSet<>(Arrays.asList(stringArray));
 	}
@@ -113,6 +150,11 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		return post;
 	}
 
+	@Override
+	public void setBeanName(String name) {
+		this.beanName.set(name);
+	}
+
 	private static Instant publishedDate(SyndEntry entry) {
 		var dates = new Date[] { entry.getUpdatedDate(), entry.getPublishedDate() };
 		for (var date : dates)
@@ -121,9 +163,24 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		return null;
 	}
 
-	@Override
-	public void setBeanName(String name) {
-		this.beanName.set(name);
+	protected String buildAuthorReferenceForTweet(Author author) {
+		Assert.notNull(author, "the author must not be null");
+		var txt = new StringBuilder();
+		var socialMediaStringMap = author.socialMedia();
+
+		if (StringUtils.hasText(author.name())) {
+			txt.append(author.name());
+		}
+
+		if (!socialMediaStringMap.isEmpty()) {
+			var twitter = socialMediaStringMap.getOrDefault(AuthorSocialMedia.TWITTER, "");
+			if (StringUtils.hasText(twitter)) {
+				if (!twitter.startsWith("@"))
+					twitter = "@" + socialMediaStringMap;
+				txt.append(String.format(" (%s)", twitter));
+			}
+		}
+		return txt.toString();
 	}
 
 }

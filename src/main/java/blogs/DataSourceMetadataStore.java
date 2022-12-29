@@ -1,4 +1,4 @@
-package com.joshlong.spring.blogs.metadata;
+package blogs;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.integration.metadata.MetadataStore;
@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @RequiredArgsConstructor
-public class DataSourceMetadataStore implements MetadataStore {
+class DataSourceMetadataStore implements MetadataStore {
 
 	private final JdbcTemplate ds;
 
