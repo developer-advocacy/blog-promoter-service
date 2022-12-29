@@ -41,14 +41,6 @@ public class Main {
 
 	static class Hints implements RuntimeHintsRegistrar {
 
-		static List<String> classes(String propertyName, String propertyValue) {
-			Assert.hasText(propertyName, "the propertyName must not be null");
-			Assert.hasText(propertyValue, "the propertyValue must not be null");
-			return Arrays //
-					.stream((propertyValue.contains(" ")) ? propertyValue.split(" ") : new String[] { propertyValue }) //
-					.map(String::trim).filter(xValue -> !xValue.strip().equals("")).toList();
-		}
-
 		@Override
 		public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
 
@@ -68,13 +60,21 @@ public class Main {
 				var props = new Properties();
 				props.load(in);
 				props.propertyNames().asIterator().forEachRemaining(pn -> {
-					var classes = classes((String) pn, props.getProperty((String) pn));
+					var classes = loadClasses((String) pn, props.getProperty((String) pn));
 					classes.forEach(cn -> hints.reflection().registerType(TypeReference.of(cn), mcs));
 				});
 			}
 			catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+		}
+
+		private static List<String> loadClasses(String propertyName, String propertyValue) {
+			Assert.hasText(propertyName, "the propertyName must not be null");
+			Assert.hasText(propertyValue, "the propertyValue must not be null");
+			return Arrays //
+					.stream((propertyValue.contains(" ")) ? propertyValue.split(" ") : new String[] { propertyValue }) //
+					.map(String::trim).filter(xValue -> !xValue.strip().equals("")).toList();
 		}
 
 	}
