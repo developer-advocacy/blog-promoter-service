@@ -12,6 +12,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.net.URI;
 import java.net.URL;
 import java.sql.Array;
 import java.time.Instant;
@@ -170,9 +171,14 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		if (!socialMediaStringMap.isEmpty()) {
 			var twitter = socialMediaStringMap.getOrDefault(AuthorSocialMedia.TWITTER, "");
 			if (StringUtils.hasText(twitter)) {
-				if (!twitter.startsWith("@"))
-					twitter = "@" + twitter;
-				txt.append(String.format(" (%s)", twitter));
+				var twitterUrl = URI.create(twitter);
+				var path = twitterUrl.getPath();
+				if (path.startsWith("/"))
+					path = path.substring(1);
+				if (!path.startsWith("@"))
+					path = "@" + path;
+				twitter = path;
+				txt.append(twitter);
 			}
 		}
 		else if (StringUtils.hasText(author.name())) {
