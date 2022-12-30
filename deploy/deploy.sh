@@ -2,7 +2,7 @@
 set -e
 set -o pipefail
 
-export APP_NAME=spring-blog-promoter
+export APP_NAME=blog-promoter
 export SECRETS=${APP_NAME}-secrets
 export SECRETS_FN=$HOME/${SECRETS}
 export IMAGE_NAME=gcr.io/${PROJECT_ID}/${APP_NAME}
