@@ -12,7 +12,7 @@
     <artifactId>blog-promotion</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <properties>
-         <spring-cloud.version>2022.0.0</spring-cloud.version>
+        <spring-cloud.version>2022.0.0</spring-cloud.version>
         <java.version>17</java.version>
     </properties>
     <dependencies>
@@ -99,11 +99,17 @@
         </dependencies>
     </dependencyManagement>
     <build>
-         <plugins>
-             <plugin>
-                 <groupId>org.graalvm.buildtools</groupId>
-                 <artifactId>native-maven-plugin</artifactId>
-             </plugin>
+        <plugins>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <buildArgs>
+                        <buildArg>--no-fallback -J-Xmx10g </buildArg>
+                    </buildArgs>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
@@ -163,11 +169,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.graalvm.buildtools</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-                <extensions>true</extensions>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

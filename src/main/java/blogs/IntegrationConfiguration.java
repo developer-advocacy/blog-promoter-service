@@ -64,19 +64,17 @@ class IntegrationConfiguration {
 				(id, pipeline) -> buildPromotionIntegrationFlow(twitter, client, id, pipeline));
 	}
 
+	/**
+	 * for each pipeline, apply the {@link BiFunction}, and then return the result.
+	 */
 	private static void visitPipelinesAndLaunchIntegrationFlow(IntegrationFlowContext context,
 			Map<String, Pipeline> pipelines, BiFunction<String, Pipeline, IntegrationFlow> mapper) {
-		pipelines //
-				.forEach((id, blogPromotionPipeline) -> {
-					log.info("the id [" + id + "] is mapped to [" + blogPromotionPipeline + "]");
-					var flow = mapper.apply(id, blogPromotionPipeline);
-					context.registration(flow).register().start();
-				});
+		pipelines.forEach((id, blogPromotionPipeline) -> context.registration(mapper.apply(id, blogPromotionPipeline))
+				.register().start());
 	}
 
 	private static IntegrationFlow buildPromotionIntegrationFlow(Twitter twitter, Twitter.Client client, String id,
 			Pipeline pipeline) {
-
 		return IntegrationFlow//
 				.from((MessageSource<PromotableBlog>) () -> {
 					var promotable = pipeline.getPromotableBlogs();
@@ -105,7 +103,6 @@ class IntegrationConfiguration {
 
 	private static IntegrationFlow buildIngestIntegrationFlow(String beanName, Pipeline promotionPipeline,
 			MetadataStore metadataStore) {
-		log.debug("launching " + IntegrationFlow.class.getName() + " for " + beanName + '.');
 		var inbound = Feed //
 				.inboundAdapter(promotionPipeline.getFeedUrl(), beanName) //
 				.metadataStore(metadataStore);
@@ -114,11 +111,7 @@ class IntegrationConfiguration {
 				.transform(promotionPipeline::mapBlogPost) //
 				.transform(promotionPipeline::record) //
 				.handle((GenericHandler<BlogPost>) (payload, headers) -> {
-					if (log.isDebugEnabled()) {
-						var url = payload.url();
-						log.debug("ingested a blogPost [" + url + "]");
-						headers.forEach((key, value) -> log.debug(url + ":" + key + '=' + value));
-					}
+					log.debug("ingested a blogPost [" + payload.url() + "]");
 					return null;
 				}) //
 				.get();

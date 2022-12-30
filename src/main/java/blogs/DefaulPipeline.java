@@ -135,7 +135,7 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 				        author=excluded.author ,
 				        blog_id=excluded.blog_id
 				""";
-		tx.execute(tx -> {
+		return tx.execute(tx -> {
 			ds.update(sql, ps -> {
 				ps.setString(1, post.url().toString());
 				ps.setDate(2, new java.sql.Date(post.published().toEpochMilli()));
@@ -145,10 +145,8 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 				ps.setString(6, this.beanName.get());
 				ps.execute();
 			});
-			return null;
+			return post;
 		});
-		log.debug(post.url() + " " + post.title());
-		return post;
 	}
 
 	@Override
