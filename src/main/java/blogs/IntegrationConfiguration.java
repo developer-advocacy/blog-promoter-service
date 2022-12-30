@@ -78,9 +78,10 @@ class IntegrationConfiguration {
 		return IntegrationFlow//
 				.from((MessageSource<PromotableBlog>) () -> {
 					var promotable = pipeline.getPromotableBlogs();
-					log.debug("there are " + promotable.size() + " " + PromotableBlog.class.getSimpleName()
-							+ "s to promote for pipeline [" + id + "]");
-					if (promotable.size() > 0) {
+					var size = promotable.size();
+					if (size > 0) {
+						log.debug("there are " + size + " " + PromotableBlog.class.getSimpleName()
+								+ "s to promote for pipeline [" + id + "]");
 						return MessageBuilder.withPayload(promotable.get(0)).build();
 					}
 
