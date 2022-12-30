@@ -104,11 +104,13 @@
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
                 <extensions>true</extensions>
-                <configuration>
-                    <buildArgs>
-                        <buildArg>--no-fallback -J-Xmx10g </buildArg>
-                    </buildArgs>
-                </configuration>
+                <!--
+                    <configuration>
+                        <buildArgs>
+                            <buildArg>&#45;&#45;no-fallback -J-Xmx10g </buildArg>
+                        </buildArgs>
+                    </configuration>
+                -->
             </plugin>
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
