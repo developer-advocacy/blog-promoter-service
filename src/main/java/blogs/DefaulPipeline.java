@@ -167,11 +167,6 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		Assert.notNull(author, "the author must not be null");
 		var txt = new StringBuilder();
 		var socialMediaStringMap = author.socialMedia();
-
-		if (StringUtils.hasText(author.name())) {
-			txt.append(author.name());
-		}
-
 		if (!socialMediaStringMap.isEmpty()) {
 			var twitter = socialMediaStringMap.getOrDefault(AuthorSocialMedia.TWITTER, "");
 			if (StringUtils.hasText(twitter)) {
@@ -180,6 +175,10 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 				txt.append(String.format(" (%s)", twitter));
 			}
 		}
+		else if (StringUtils.hasText(author.name())) {
+			txt.append(author.name());
+		}
+
 		return txt.toString();
 	}
 
