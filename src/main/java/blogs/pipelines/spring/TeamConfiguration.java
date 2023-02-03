@@ -7,9 +7,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 import java.util.HashSet;
 import java.util.concurrent.ScheduledExecutorService;
@@ -20,9 +21,21 @@ import java.util.function.Supplier;
 @Configuration
 class TeamConfiguration {
 
+	private static WebClient redirectFollowingWebClient(WebClient.Builder builder) {
+		var httpClient = HttpClient.create().compress(true) //
+				.followRedirect(true);
+		var client = new ReactorClientHttpConnector(httpClient);
+		var exchangeStrategies = ExchangeStrategies//
+				.builder() //
+				.codecs(c -> c.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))//
+				.build();
+		return builder.exchangeStrategies(exchangeStrategies).clientConnector(client).build();
+	}
+
 	@Bean
 	TeamClient springTeamClient(WebClient.Builder http) {
-		var supplier = buildHttpHtmlSupplier(http.build());
+		var client = redirectFollowingWebClient(http);
+		var supplier = buildHttpHtmlSupplier(client);
 		return new DefaultJsoupTeamClient(supplier);
 	}
 

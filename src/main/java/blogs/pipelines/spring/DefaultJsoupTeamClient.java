@@ -2,15 +2,18 @@ package blogs.pipelines.spring;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.springframework.util.Assert;
 
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+@Slf4j
 @RequiredArgsConstructor
 class DefaultJsoupTeamClient implements TeamClient {
 
@@ -23,21 +26,35 @@ class DefaultJsoupTeamClient implements TeamClient {
 		Assert.notNull(html, "the html must be valid");
 		var doc = Jsoup.parse(html);
 		var teammates = new HashSet<Teammate>();
-		for (var e : doc.select(".team-member--info")) {
-			var url = "https://spring.io" + e.select("a").attr("href");
-			var name = e.select(".team-member--name").text();
-			var bio = e.select(".team-member--bio");
-			var position = bio.select(".team-member--position").text();
-			var location = bio.select(".team-member--location").text();
-			var socialElement = e.select(".team-member--social");
-			var map = new HashMap<Social, String>();
-			for (var socialType : Social.values()) {
-				var cssClazzName = socialType.className();
-				var icon = socialElement.select("." + cssClazzName);
-				for (var i : icon)
-					map.put(socialType, i.attr("href"));
+		for (var e : doc.select(".is-one-third")) {
+			log.debug("-----------");
+			var a = e.select("a");
+			var url = "https://spring.io" + a.attr("href");
+			var name = a.text().trim();
+			var bio = e.select(".team-content");
+			var position = bio.select(".job").text();
+			var location = bio.select(".my-2").get(1).text();
+			if (log.isDebugEnabled())
+				log.debug(Map.of("url", url, "name", name, "position", position, "location", location) + "");
+			// so far so good
+
+			var socialStringHashMap = new HashMap<Social, String>();
+			var teamSocial = e.select(".team-social");
+			for (var socialLink : teamSocial.select("a")) {
+				var href = socialLink.attr("href");
+				var svg = socialLink.select("svg");
+				var svgClassName = svg.attr("class").split(" ")[1].split("-")[1].trim().toUpperCase();
+				try {
+					var key = Social.valueOf(svgClassName);
+					socialStringHashMap.put(key, href);
+				} //
+				catch (IllegalArgumentException iae) { //
+					log.warn("no social media type for: {} ", svgClassName);
+				}
 			}
-			var teammate = new Teammate(from(url), name, position, location, map);
+			log.debug("social: " + socialStringHashMap);
+
+			var teammate = new Teammate(from(url), name, position, location, socialStringHashMap);
 			teammates.add(teammate);
 		}
 		return teammates;
