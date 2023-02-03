@@ -34,10 +34,6 @@ class DefaultJsoupTeamClient implements TeamClient {
 			var bio = e.select(".team-content");
 			var position = bio.select(".job").text();
 			var location = bio.select(".my-2").get(1).text();
-			if (log.isDebugEnabled())
-				log.debug(Map.of("url", url, "name", name, "position", position, "location", location) + "");
-			// so far so good
-
 			var socialStringHashMap = new HashMap<Social, String>();
 			var teamSocial = e.select(".team-social");
 			for (var socialLink : teamSocial.select("a")) {
@@ -52,10 +48,10 @@ class DefaultJsoupTeamClient implements TeamClient {
 					log.warn("no social media type for: {} ", svgClassName);
 				}
 			}
-			log.debug("social: " + socialStringHashMap);
 
 			var teammate = new Teammate(from(url), name, position, location, socialStringHashMap);
 			teammates.add(teammate);
+			log.debug("discovered teammate: " + teammate);
 		}
 		log.info("there are " + teammates.size() + " teammates");
 		return teammates;
