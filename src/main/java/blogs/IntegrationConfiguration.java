@@ -89,7 +89,7 @@ class IntegrationConfiguration {
 				}, p -> p.poller(pc -> pc.fixedRate(1, TimeUnit.MINUTES)))//
 				.filter(PromotableBlog.class,
 						promotableBlog -> promotableBlog.blogPost().published()
-								.isAfter(Instant.now().minus(Duration.ofDays(10))))//
+								.isAfter(Instant.now().minus(Duration.ofDays(5))))//
 				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
 					var tweet = pipeline.composeTweetFor(payload);
 					var sent = twitter.scheduleTweet(client, new Date(), pipeline.getTwitterUsername(), tweet, null);

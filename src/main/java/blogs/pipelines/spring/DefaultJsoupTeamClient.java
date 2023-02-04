@@ -27,7 +27,6 @@ class DefaultJsoupTeamClient implements TeamClient {
 		var doc = Jsoup.parse(html);
 		var teammates = new HashSet<Teammate>();
 		for (var e : doc.select(".is-one-third")) {
-			log.debug("-----------");
 			var a = e.select("a");
 			var url = "https://spring.io" + a.attr("href");
 			var name = a.text().trim();
