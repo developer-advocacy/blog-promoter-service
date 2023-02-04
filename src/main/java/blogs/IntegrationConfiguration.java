@@ -36,6 +36,8 @@ class IntegrationConfiguration {
 			Map<String, Pipeline> pipelines, ApplicationEventPublisher publisher) {
 		var counter = new AtomicInteger();
 		return event -> {
+			log.debug("there are " + pipelines.size() + " Pipelines and we just received " + "the "
+					+ PipelineInitializedEvent.class.getSimpleName() + " event.");
 			counter.incrementAndGet();
 			if (counter.get() == pipelines.size()) {
 				log.debug("publishing " + AllPipelinesInitializedEvent.class.getSimpleName() + "!");

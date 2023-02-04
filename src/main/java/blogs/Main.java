@@ -1,6 +1,7 @@
 package blogs;
 
 import com.joshlong.twitter.Twitter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -20,6 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+@Slf4j
 @SpringBootApplication
 @ImportRuntimeHints(Main.Hints.class)
 @EnableConfigurationProperties(JobProperties.class)
@@ -36,7 +38,11 @@ public class Main {
 
 	@Bean(destroyMethod = "")
 	ScheduledExecutorService scheduledExecutorService() {
-		return Executors.newScheduledThreadPool(2 * Runtime.getRuntime().availableProcessors());
+		var processors = Runtime.getRuntime().availableProcessors();
+		var threads = Math.max(2 * processors, 8);
+		log.info("there are " + processors + " processors on this machine.");
+		log.info("employing " + threads + " threads.");
+		return Executors.newScheduledThreadPool(threads);
 	}
 
 	static class Hints implements RuntimeHintsRegistrar {

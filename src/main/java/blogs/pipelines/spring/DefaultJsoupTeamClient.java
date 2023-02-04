@@ -50,7 +50,7 @@ class DefaultJsoupTeamClient implements TeamClient {
 
 			var teammate = new Teammate(from(url), name, position, location, socialStringHashMap);
 			teammates.add(teammate);
-			log.debug("discovered teammate: " + teammate);
+			// log.debug("discovered teammate: " + teammate);
 		}
 		log.info("there are " + teammates.size() + " teammates");
 		return teammates;
