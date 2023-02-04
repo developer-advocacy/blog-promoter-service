@@ -83,7 +83,7 @@ public class DefaulPipeline implements BeanNameAware, Pipeline {
 		var categories = source.getCategories().stream().map(SyndCategory::getName).map(String::toLowerCase)
 				.collect(Collectors.toSet());
 		var authors = source.getAuthors().stream().map(SyndPerson::getName).distinct().toList();
-		var authorName = authors.size() > 0 ? authors.get(0) : null;
+		var authorName = authors.size() > 0 ? authors.get(0) : source.getAuthor();
 		return new BlogPost(title, UrlUtils.buildUrl(uri), authorName, published, categories);
 	}
 

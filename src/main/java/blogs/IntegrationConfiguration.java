@@ -36,8 +36,9 @@ class IntegrationConfiguration {
 			Map<String, Pipeline> pipelines, ApplicationEventPublisher publisher) {
 		var counter = new AtomicInteger();
 		return event -> {
-			log.debug("there are " + pipelines.size() + " Pipelines and we just received " + "the "
-					+ PipelineInitializedEvent.class.getSimpleName() + " event.");
+			log.debug("there are " + pipelines.size() + " Pipelines and we just received a "
+					+ PipelineInitializedEvent.class.getSimpleName() + " event for "
+					+ event.getSource().pipeline().getTwitterUsername() + ".");
 			counter.incrementAndGet();
 			if (counter.get() == pipelines.size()) {
 				log.debug("publishing " + AllPipelinesInitializedEvent.class.getSimpleName() + "!");
@@ -77,16 +78,19 @@ class IntegrationConfiguration {
 
 	private static IntegrationFlow buildPromotionIntegrationFlow(Twitter twitter, Twitter.Client client, String id,
 			Pipeline pipeline) {
+		var promotableBlogSimpleName = PromotableBlog.class.getSimpleName();
 		return IntegrationFlow//
 				.from((MessageSource<PromotableBlog>) () -> {
 					var promotable = pipeline.getPromotableBlogs();
+
 					var size = promotable.size();
-					var simpleName = PromotableBlog.class.getSimpleName();
 					if (size > 0) {
-						log.debug("there are " + size + " " + simpleName + "s to promote for pipeline [" + id + "]");
+						log.debug("there are " + size + " " + promotableBlogSimpleName + "s to promote for pipeline ["
+								+ id + "]");
 						return MessageBuilder.withPayload(promotable.get(0)).build();
 					}
-					log.debug("there are no " + simpleName + " blogs to promote for pipeline [" + id + "]");
+					log.debug(
+							"there are no " + promotableBlogSimpleName + " blogs to promote for pipeline [" + id + "]");
 					return null;
 				}, p -> p.poller(pc -> pc.fixedRate(1, TimeUnit.MINUTES)))//
 				.filter(PromotableBlog.class,

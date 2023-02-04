@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.HashSet;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -50,18 +51,25 @@ class TeamConfiguration {
 
 	@Bean
 	ApplicationListener<ApplicationReadyEvent> teamApplicationReadyEventListener(TeamClient teamClient,
-			ApplicationEventPublisher publisher, ScheduledExecutorService ses) {
-		return new TeamApplicationReadyEventListener(teamClient, publisher, ses);
+			ApplicationEventPublisher publisher) {
+		return new TeamApplicationReadyEventListener(teamClient, publisher);
 	}
 
 	@RequiredArgsConstructor
 	static class TeamApplicationReadyEventListener implements ApplicationListener<ApplicationReadyEvent> {
 
+		private final ScheduledExecutorService scheduledExecutorService = Executors
+				.newScheduledThreadPool(threadsForThreadpool());
+
+		private int threadsForThreadpool() {
+			var threads = Math.max(2 * Runtime.getRuntime().availableProcessors(), 8);
+			log.info("there are " + threads + " processors on this machine.");
+			return threads;
+		}
+
 		private final TeamClient teamClient;
 
 		private final ApplicationEventPublisher publisher;
-
-		private final ScheduledExecutorService ses;
 
 		private void refresh() {
 			publisher.publishEvent(new TeamRefreshedEvent(new HashSet<>(teamClient.team())));
@@ -70,7 +78,7 @@ class TeamConfiguration {
 		@Override
 		public void onApplicationEvent(ApplicationReadyEvent event) {
 			refresh();
-			ses.scheduleAtFixedRate(this::refresh, 1, 1, TimeUnit.HOURS);
+			scheduledExecutorService.scheduleAtFixedRate(this::refresh, 1, 1, TimeUnit.HOURS);
 		}
 
 	}

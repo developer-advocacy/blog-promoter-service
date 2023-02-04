@@ -12,6 +12,11 @@ public class PipelineInitializedEvent extends ApplicationEvent {
 	public record PipelineCount(Pipeline pipeline, int count) {
 	}
 
+	@Override
+	public PipelineCount getSource() {
+		return (PipelineCount) super.getSource();
+	}
+
 	public PipelineInitializedEvent(Pipeline pipeline) {
 		super(new PipelineCount(pipeline, COUNTER.incrementAndGet()));
 	}
