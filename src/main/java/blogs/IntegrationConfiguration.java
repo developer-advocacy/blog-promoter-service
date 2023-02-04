@@ -79,18 +79,19 @@ class IntegrationConfiguration {
 				.from((MessageSource<PromotableBlog>) () -> {
 					var promotable = pipeline.getPromotableBlogs();
 					var size = promotable.size();
+					var simpleName = PromotableBlog.class.getSimpleName();
 					if (size > 0) {
-						log.debug("there are " + size + " " + PromotableBlog.class.getSimpleName()
-								+ "s to promote for pipeline [" + id + "]");
+						log.debug("there are " + size + " " + simpleName + "s to promote for pipeline [" + id + "]");
 						return MessageBuilder.withPayload(promotable.get(0)).build();
 					}
-
+					log.debug("there are no " + simpleName + " blogs to promote for pipeline [" + id + "]");
 					return null;
 				}, p -> p.poller(pc -> pc.fixedRate(1, TimeUnit.MINUTES)))//
 				.filter(PromotableBlog.class,
 						promotableBlog -> promotableBlog.blogPost().published()
 								.isAfter(Instant.now().minus(Duration.ofDays(5))))//
 				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
+					log.debug("attempting to promote " + payload.blogPost().title());
 					var tweet = pipeline.composeTweetFor(payload);
 					var sent = twitter.scheduleTweet(client, new Date(), pipeline.getTwitterUsername(), tweet, null);
 					if (Objects.equals(sent.block(), Boolean.TRUE)) {
