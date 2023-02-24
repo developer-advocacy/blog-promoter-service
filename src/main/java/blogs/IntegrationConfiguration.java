@@ -96,13 +96,7 @@ class IntegrationConfiguration {
 					log.info("got a PromotableBlog to promote whose published date is {} and the current date is {}",
 							payload.blogPost().published() + "", Instant.now());
 					return payload;
-				})
-				/*
-				 * .filter(PromotableBlog.class, promotableBlog ->
-				 * promotableBlog.blogPost().published()
-				 * .isAfter(Instant.now().minus(Duration.ofDays(5))))//
-				 */
-				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
+				}).handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
 					log.debug("attempting to promote " + payload.blogPost().title());
 					var tweet = pipeline.composeTweetFor(payload);
 					var sent = twitter.scheduleTweet(client, new Date(), pipeline.getTwitterUsername(), tweet, null);
