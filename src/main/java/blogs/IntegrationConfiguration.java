@@ -82,7 +82,6 @@ class IntegrationConfiguration {
 		return IntegrationFlow//
 				.from((MessageSource<PromotableBlog>) () -> {
 					var promotable = pipeline.getPromotableBlogs();
-
 					var size = promotable.size();
 					if (size > 0) {
 						log.debug("there are " + size + " " + promotableBlogSimpleName + "s to promote for pipeline ["
@@ -93,9 +92,16 @@ class IntegrationConfiguration {
 							"there are no " + promotableBlogSimpleName + " blogs to promote for pipeline [" + id + "]");
 					return null;
 				}, p -> p.poller(pc -> pc.fixedRate(1, TimeUnit.MINUTES)))//
-				.filter(PromotableBlog.class,
-						promotableBlog -> promotableBlog.blogPost().published()
-								.isAfter(Instant.now().minus(Duration.ofDays(5))))//
+				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
+					log.info("got a PromotableBlog to promote whose published date is {} and the current date is {}",
+							payload.blogPost().published() + "", Instant.now());
+					return payload;
+				})
+				/*
+				 * .filter(PromotableBlog.class, promotableBlog ->
+				 * promotableBlog.blogPost().published()
+				 * .isAfter(Instant.now().minus(Duration.ofDays(5))))//
+				 */
 				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
 					log.debug("attempting to promote " + payload.blogPost().title());
 					var tweet = pipeline.composeTweetFor(payload);
