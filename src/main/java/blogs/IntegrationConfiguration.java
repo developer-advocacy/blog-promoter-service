@@ -18,7 +18,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;

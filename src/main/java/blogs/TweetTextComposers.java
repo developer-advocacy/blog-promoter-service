@@ -1,8 +1,5 @@
 package blogs;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 abstract class TweetTextComposers {
 
 	public static final int MAX_TWEET_LENGTH = 280;
@@ -23,9 +20,9 @@ abstract class TweetTextComposers {
 
 	private static String rTrimToSpace(String text, int desired) {
 		while (text.length() >= desired) {
-			var lindx = text.lastIndexOf(' ');
-			if (lindx != -1)
-				text = text.substring(0, lindx);
+			var lastIndexOf = text.lastIndexOf(' ');
+			if (lastIndexOf != -1)
+				text = text.substring(0, lastIndexOf);
 		}
 		return text;
 	}

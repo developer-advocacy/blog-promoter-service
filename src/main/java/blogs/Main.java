@@ -14,8 +14,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -24,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @SpringBootApplication
@@ -73,7 +69,9 @@ public class Main {
 			Assert.hasText(propertyValue, "the propertyValue must not be null");
 			return Arrays //
 					.stream((propertyValue.contains(" ")) ? propertyValue.split(" ") : new String[] { propertyValue }) //
-					.map(String::trim).filter(xValue -> !xValue.strip().equals("")).toList();
+					.map(String::trim)//
+					.map(String::strip).filter(xValue -> !xValue.equals(""))//
+					.toList();
 		}
 
 	}
