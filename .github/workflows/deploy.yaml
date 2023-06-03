@@ -2,10 +2,13 @@ name: Deploy
 
 env:
 
-  GKE_CLUSTER: joshlong-com
-  GKE_ZONE: us-central1-c
-  GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+
+  APP_NAME: blog-promoter-service
+  GKE_CLUSTER:   ${{ secrets.GKE_CLUSTER }}
+  GCLOUD_ZONE:  ${{ secrets.GCLOUD_ZONE }}
+  NS_NAME:  ${{ secrets.NS_NAME }}
+  GCLOUD_SA_KEY:  ${{ secrets.GCLOUD_SA_KEY }}
+
 
   # org level
   SPRING_RABBITMQ_HOST: ${{ secrets.TWITTER_SERVICE_RABBITMQ_HOST }}
@@ -45,27 +48,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: "Setup PATH"
+        run: |
+          P="${GITHUB_WORKSPACE}/bin"
+          mkdir -p $P
+          echo "${P}" >> $GITHUB_PATH
+
       - uses: 'google-github-actions/auth@v0'
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          credentials_json: '${{ secrets.GCLOUD_SA_KEY }}'
 
       - id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
           cluster_name: '${{ env.GKE_CLUSTER  }}'
-          location: '${{ env.GKE_ZONE }}'
+          location: '${{ env.GCLOUD_ZONE }}'
 
       - run: |
-          gcloud config set project $PROJECT_ID
+          gcloud config set project $GCLOUD_PROJECT 
           gcloud --quiet auth configure-docker
           kubectl get pods
-
-      - uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
 
       - uses: joshlong/java-version-export-github-action@v20
 
@@ -74,8 +76,12 @@ jobs:
           distribution: 'adopt'
           java-version: ${{ env.JAVA_MAJOR_VERSION }}
 
-      - name: Deploy Site
+      - name: Deploy
         run: |
+          kubectl get ns/$NS_NAME || kubectl create ns $NS_NAME 
+          kubectl config set-context --current --namespace=$NS_NAME
+          kubectl config view --minify | grep namespace: && echo "found the namespace.."
+
           cd $GITHUB_WORKSPACE
           export ROOT_DIR=$GITHUB_WORKSPACE
           ./deploy/deploy.sh

@@ -3,109 +3,47 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: blog-promoter
-  name: blog-promoter
+    app: blog-promoter-service
+  name: blog-promoter-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: blog-promoter
+      app: blog-promoter-service
   template:
     metadata:
       labels:
-        app: blog-promoter
+        app: blog-promoter-service
     spec:
       containers:
-        - image: gcr.io/bootiful/blog-promoter
+        - image: gcr.io/pgtm-jlong/blog-promoter-service
           imagePullPolicy: Always
-          name: blog-promoter-container
+          name: blog-promoter-service-container
 
           startupProbe:
-            failureThreshold: 60
-            periodSeconds: 60
+            failureThreshold: 120
+            periodSeconds: 120
             httpGet:
               port: 8080
               path: /actuator/health/readiness
 
           readinessProbe:
-            failureThreshold: 60
-            periodSeconds: 60
+            failureThreshold: 120
+            periodSeconds: 120
             httpGet:
               port: 8080
               path: /actuator/health/readiness
 
           livenessProbe:
-            failureThreshold: 60
-            periodSeconds: 60
+            failureThreshold: 120
+            periodSeconds: 120
             httpGet:
               port: 8080
               path: /actuator/health/liveness
 
-          env:
-#            - name: SPRING_PROFILES_ACTIVE
-#              value: "production"
-            - name: LANG
-              value: "en_US.UTF-8"
-
-            - name: SPRING_DATASOURCE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_DATASOURCE_URL
-
-            - name: SPRING_DATASOURCE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_DATASOURCE_PASSWORD
-
-            - name: SPRING_DATASOURCE_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_DATASOURCE_USERNAME
-
-            - name: SPRING_RABBITMQ_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_RABBITMQ_HOST
-
-            - name: SPRING_RABBITMQ_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_RABBITMQ_PASSWORD
-
-            - name: SPRING_RABBITMQ_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_RABBITMQ_PORT
-
-            - name: SPRING_RABBITMQ_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_RABBITMQ_USERNAME
-
-            - name: SPRING_RABBITMQ_VIRTUAL_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: SPRING_RABBITMQ_VIRTUAL_HOST
-
-            - name: BOOTIFUL_TWITTER_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: BOOTIFUL_TWITTER_CLIENT_ID
-
-            - name: BOOTIFUL_TWITTER_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: blog-promoter-secrets
-                  key: BOOTIFUL_TWITTER_CLIENT_SECRET
+          envFrom:
+            - secretRef:
+                name: blog-promoter-service-secrets
 
           resources:
             limits:
