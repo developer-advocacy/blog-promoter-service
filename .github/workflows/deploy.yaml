@@ -69,12 +69,11 @@ jobs:
           gcloud --quiet auth configure-docker
           kubectl get pods
 
-      - uses: joshlong/java-version-export-github-action@v20
 
       - uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: ${{ env.JAVA_MAJOR_VERSION }}
+          java-version: 17
 
       - name: Deploy
         run: |
