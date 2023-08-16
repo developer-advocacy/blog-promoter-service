@@ -1,6 +1,5 @@
 package blogs;
 
-import com.joshlong.twitter.Twitter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
@@ -31,11 +30,6 @@ public class Main {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Main.class, args);
-	}
-
-	@Bean
-	Twitter.Client client(JobProperties jp) {
-		return new Twitter.Client(jp.twitter().clientId(), jp.twitter().clientSecret());
 	}
 
 	static class Hints implements RuntimeHintsRegistrar {

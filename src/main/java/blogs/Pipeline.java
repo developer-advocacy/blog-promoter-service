@@ -1,5 +1,7 @@
 package blogs;
 
+import com.joshlong.socialhubclient.AuthenticatedSocialHub;
+import com.joshlong.socialhubclient.SocialHub;
 import com.rometools.rome.feed.synd.SyndEntry;
 
 import java.net.URL;
@@ -11,9 +13,9 @@ import java.util.List;
  */
 public interface Pipeline {
 
-	URL getFeedUrl();
+	AuthenticatedSocialHub socialHub ();
 
-	String getTwitterUsername();
+	URL getFeedUrl();
 
 	BlogPost mapBlogPost(SyndEntry entry);
 

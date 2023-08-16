@@ -3,9 +3,10 @@ package blogs;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "bootiful")
-record JobProperties(Twitter twitter) {
+public
+record JobProperties(SocialHub socialHub) {
 
-	record Twitter(String clientId, String clientSecret) {
-	}
+    public record SocialHub(String clientId, String clientSecret) {
+    }
 
 }
