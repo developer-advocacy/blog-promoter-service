@@ -19,30 +19,29 @@ import java.util.Map;
 @Configuration
 class JoshLongPipelineConfiguration {
 
-    @Bean
-    ApplicationListener<ApplicationReadyEvent> joshlongApplicationReadyEventListener(Pipeline joshlong,
-                                                                                     ApplicationEventPublisher publisher) {
-        return event -> publisher.publishEvent(new PipelineInitializedEvent(joshlong));
-    }
+	@Bean
+	ApplicationListener<ApplicationReadyEvent> joshlongApplicationReadyEventListener(Pipeline joshlong,
+			ApplicationEventPublisher publisher) {
+		return event -> publisher.publishEvent(new PipelineInitializedEvent(joshlong));
+	}
 
-    @Bean
-    Pipeline joshlong(TransactionTemplate tt, JdbcTemplate ds, JobProperties properties, RestTemplate restTemplate, ObjectMapper objectMapper, SocialHubChannels channels) {
+	@Bean
+	Pipeline joshlong(TransactionTemplate tt, JdbcTemplate ds, JobProperties properties, RestTemplate restTemplate,
+			ObjectMapper objectMapper, SocialHubChannels channels) {
 
-        var socialHub = new AuthenticatedSocialHub(
-                properties.socialHub().clientId(),
-                properties.socialHub().clientSecret(),
-                channels.socialHubRequestsMessageChannel(),
-                channels.socialHubErrorsMessageChannel(), restTemplate, objectMapper);
+		var socialHub = new AuthenticatedSocialHub(properties.socialHub().clientId(),
+				properties.socialHub().clientSecret(), channels.socialHubRequestsMessageChannel(),
+				channels.socialHubErrorsMessageChannel(), restTemplate, objectMapper);
 
-        var url = UrlUtils.buildUrl("https://api.joshlong.com/feed.xml");
-        return new DefaulPipeline(url, tt, ds, socialHub) {
+		var url = UrlUtils.buildUrl("https://api.joshlong.com/feed.xml");
+		return new DefaulPipeline(url, tt, ds, socialHub) {
 
-            @Override
-            public Author mapAuthor(BlogPost entry) {
-                return new Author("Josh Long", Map.of(AuthorSocialMedia.TWITTER, "starbuxman"));
-            }
-        };
+			@Override
+			public Author mapAuthor(BlogPost entry) {
+				return new Author("Josh Long", Map.of(AuthorSocialMedia.TWITTER, "starbuxman"));
+			}
+		};
 
-    }
+	}
 
 }

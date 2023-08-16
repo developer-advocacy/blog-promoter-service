@@ -72,7 +72,8 @@ class IntegrationConfiguration {
 				.register().start());
 	}
 
-	private static IntegrationFlow buildPromotionIntegrationFlow(AuthenticatedSocialHub socialHub, String id, Pipeline pipeline) {
+	private static IntegrationFlow buildPromotionIntegrationFlow(AuthenticatedSocialHub socialHub, String id,
+			Pipeline pipeline) {
 		var promotableBlogSimpleName = PromotableBlog.class.getSimpleName();
 		return IntegrationFlow//
 				.from((MessageSource<PromotableBlog>) () -> {
@@ -88,16 +89,14 @@ class IntegrationConfiguration {
 					return null;
 				}, p -> p.poller(pc -> PollerFactory.fixedRate(Duration.ofMinutes(1))))//
 				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
-					log.info("got a PromotableBlog to promote whose published date is {} and the current date is {}",
-							payload.blogPost().published() + "", Instant.now());
-					return payload;
-				})//
-				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
 					try {
+						log.info(
+								"got a PromotableBlog to promote whose published date is {} and the current date is {}",
+								payload.blogPost().published() + "", Instant.now());
 						log.debug("attempting to promote " + payload.blogPost().title());
 						var tweet = pipeline.composeTweetFor(payload);
 						var resources = new SocialHub.MediaResource[0];
-						socialHub.post(  new SocialHub.Post("twitter".split(","), tweet, resources));
+						socialHub.post(new SocialHub.Post("twitter".split(","), tweet, resources));
 						log.debug("sent a tweet for " + payload.blogPost().title());
 						pipeline.promote(payload.blogPost());
 						return null;

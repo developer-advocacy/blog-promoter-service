@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface Pipeline {
 
-	AuthenticatedSocialHub socialHub ();
+	AuthenticatedSocialHub socialHub();
 
 	URL getFeedUrl();
 
