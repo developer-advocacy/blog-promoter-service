@@ -6,7 +6,6 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,7 +35,7 @@ public class Main {
 	}
 
 	@Bean
-	ApplicationRunner debugRunner(@Value("${debug}") boolean debug) {
+	ApplicationRunner debugRunner(@Value("${debug:false}") boolean debug) {
 		return args -> {
 
 			log.info("ENVIRONMENT VARIABLES");
