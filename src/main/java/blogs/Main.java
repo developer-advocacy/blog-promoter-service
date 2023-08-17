@@ -5,6 +5,9 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -30,6 +33,15 @@ public class Main {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Main.class, args);
+	}
+
+	@Bean
+	ApplicationRunner debugRunner(@Value("${debug}") boolean debug) {
+		return args -> {
+
+			log.info("ENVIRONMENT VARIABLES");
+			System.getenv().forEach((k, v) -> log.info(k + '=' + v));
+		};
 	}
 
 	static class Hints implements RuntimeHintsRegistrar {

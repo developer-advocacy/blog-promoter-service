@@ -99,8 +99,9 @@ class IntegrationConfiguration {
 						pipeline.promote(payload.blogPost());
 						return null;
 					} //
-					catch (Exception e) {
-						throw new RuntimeException(e);
+					catch (Throwable e) {
+						log.error("could not promote the tweet", e);
+						throw new RuntimeException("could not promote the tweet!", e);
 					}
 				}) //
 				.get();
