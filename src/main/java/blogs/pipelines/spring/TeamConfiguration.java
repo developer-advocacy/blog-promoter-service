@@ -22,6 +22,13 @@ import java.util.function.Supplier;
 @Configuration
 class TeamConfiguration {
 
+	@Bean
+	TeamClient springTeamClient(WebClient.Builder http) {
+		var client = redirectFollowingWebClient(http);
+		var supplier = buildHttpHtmlSupplier(client);
+		return new DefaultJsoupTeamClient(supplier);
+	}
+
 	private static WebClient redirectFollowingWebClient(WebClient.Builder builder) {
 		var httpClient = HttpClient.create().compress(true) //
 				.followRedirect(true);
@@ -33,14 +40,7 @@ class TeamConfiguration {
 		return builder.exchangeStrategies(exchangeStrategies).clientConnector(client).build();
 	}
 
-	@Bean
-	TeamClient springTeamClient(WebClient.Builder http) {
-		var client = redirectFollowingWebClient(http);
-		var supplier = buildHttpHtmlSupplier(client);
-		return new DefaultJsoupTeamClient(supplier);
-	}
-
-	static Supplier<String> buildHttpHtmlSupplier(WebClient webClient) {
+	private static Supplier<String> buildHttpHtmlSupplier(WebClient webClient) {
 		return () -> webClient//
 				.get() //
 				.uri("https://spring.io/team") //
@@ -56,7 +56,7 @@ class TeamConfiguration {
 	}
 
 	@RequiredArgsConstructor
-	static class TeamApplicationReadyEventListener implements ApplicationListener<ApplicationReadyEvent> {
+	private static class TeamApplicationReadyEventListener implements ApplicationListener<ApplicationReadyEvent> {
 
 		private final ScheduledExecutorService scheduledExecutorService = Executors
 				.newScheduledThreadPool(threadsForThreadpool());

@@ -18,6 +18,7 @@ import org.springframework.integration.metadata.MetadataStore;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -78,31 +79,31 @@ class IntegrationConfiguration {
 					var promotable = pipeline.getPromotableBlogs();
 					var size = promotable.size();
 					if (size > 0) {
-						log.debug("there are " + size + " " + promotableBlogSimpleName + "s to promote for pipeline ["
+						log.info("there are " + size + " " + promotableBlogSimpleName + "s to promote for pipeline ["
 								+ id + "]");
 						return MessageBuilder.withPayload(promotable.get(0)).build();
 					}
-					log.debug(
-							"there are no " + promotableBlogSimpleName + " blogs to promote for pipeline [" + id + "]");
+					log.debug("there are no {} blogs to promote for pipeline [{}]", promotableBlogSimpleName, id);
 					return null;
 				}, p -> p.poller(pc -> PollerFactory.fixedRate(Duration.ofMinutes(1))))//
 				.handle((GenericHandler<PromotableBlog>) (payload, headers) -> {
 					try {
+						Assert.notNull(payload.blogPost(), "the BlogPost can not be null");
 						log.info(
 								"got a PromotableBlog to promote whose published date is {} and the current date is {}",
 								payload.blogPost().published() + "", Instant.now());
-						log.debug("attempting to promote " + payload.blogPost().title());
+						log.debug("attempting to promote {} ", payload.blogPost().title());
 						var tweet = pipeline.composeTweetFor(payload);
 						var resources = new SocialHub.MediaResource[0];
 						socialHub.post(new SocialHub.Post("twitter".split(","), tweet, resources));
-						log.debug("sent a tweet for " + payload.blogPost().title());
+						log.info("sent a tweet for " + payload.blogPost().title());
 						pipeline.promote(payload.blogPost());
-						return null;
 					} //
 					catch (Throwable e) {
 						log.error("could not promote the tweet", e);
 						throw new RuntimeException("could not promote the tweet!", e);
-					}
+					} //
+					return null;
 				}) //
 				.get();
 	}
@@ -117,7 +118,7 @@ class IntegrationConfiguration {
 				.transform(promotionPipeline::mapBlogPost) //
 				.transform(promotionPipeline::record) //
 				.handle((GenericHandler<BlogPost>) (payload, headers) -> {
-					log.debug("ingested a blogPost [" + payload.url() + "]");
+					log.info("ingested a blogPost [{}]", payload.url());
 					return null;
 				}) //
 				.get();
