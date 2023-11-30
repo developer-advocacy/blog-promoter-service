@@ -16,7 +16,7 @@ spec:
         app: blog-promoter-service
     spec:
       containers:
-        - image: gcr.io/pgtm-jlong/blog-promoter-service
+        - image: gcr.io/joshlong/blog-promoter-service
           imagePullPolicy: Always
           name: blog-promoter-service-container
 
